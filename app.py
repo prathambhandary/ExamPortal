@@ -5,6 +5,8 @@ import database
 app = Flask(__name__)
 CORS(app)
 
+database.create_tables()
+
 
 @app.route('/')
 def home():
