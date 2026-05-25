@@ -15,9 +15,9 @@ def test_register():
     response = requests.post(
         BASE_URL + "/register",
         json={
-            "username": "Rahul",
-            "password": "rahul",
-            "role": "student"
+            "username": "admin",
+            "password": "admin",
+            "role": "admin"
         }
     )
 
@@ -39,8 +39,20 @@ def test_login():
     print("Status:", response.status_code)
     print("Response:", response.json())
 
+def test_delete_user():
+    response = requests.post(
+        BASE_URL + "/delete_user",
+        json={
+            "username": "Rahul"
+        }
+    )
+
+    print("\nDELETE USER TEST")
+    print("Status:", response.status_code)
+    print("Response:", response.json())
 
 if __name__ == "__main__":
     test_home()
     test_register()
-    test_login()
+    # test_login()
+    # test_delete_user()

@@ -73,6 +73,7 @@ def add_batch():
 
 
 # Temporary
+
 @app.route("/delete_user", methods=['POST'])
 def delete_user():
     data = request.json
@@ -83,6 +84,11 @@ def delete_user():
 
     database.delete_user(username)
     return jsonify({"message": "User deleted successfully"}), 200
+@app.route("/addrow")
+def addrow():
+    database.add_row()
+    return "Row added"
+
 
 if __name__ == "__main__":
     app.run(
