@@ -197,12 +197,6 @@ def add_batch(batch_name, course, year):
     finally:
         conn.close()
 
-def add_row():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("ALTER TABLE batches ADD COLUMN year INTEGER NOT NULL DEFAULT 2026")
-    conn.commit()
-    conn.close()
 
 if __name__ == "__main__":
     create_tables()
