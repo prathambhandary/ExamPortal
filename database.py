@@ -48,11 +48,11 @@ def create_tables():
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               test_name TEXT NOT NULL UNIQUE,
               category TEXT NOT NULL,
-              duration_minutes INTEGER DEFAULT 180,
+              duration_minutes INTEGER NOT NULL,
               total_marks INTEGER NOT NULL,
               start_time TIMESTAMP NOT NULL,
               end_time TIMESTAMP NOT NULL,
-              is_active INTEGER DEFAULT 1,
+              is_active INTEGER DEFAULT 0,
               shuffle_questions INTEGER DEFAULT 0
         )''')
 
@@ -61,10 +61,9 @@ def create_tables():
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               subject TEXT NOT NULL,
               chapter TEXT NOT NULL,
-              topic TEXT,
-              question_type TEXT NOT NULL,
+              question_type TEXT NOT NULL, 
               difficulty TEXT DEFAULT 'Medium',
-              question_text TEXT NOT NULL,
+              question_text TEXT NOT NULL, 
               option_a TEXT,
               option_b TEXT,
               option_c TEXT,
