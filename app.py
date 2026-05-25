@@ -9,6 +9,8 @@ CORS(app)
 
 database.create_tables()
 
+database.add_row()
+
 @app.route('/api/github-deploy-webhook', methods=['POST'])
 def github_webhook():
     incoming_secret = request.headers.get('X-Hub-Signature-256') or request.args.get('token')
