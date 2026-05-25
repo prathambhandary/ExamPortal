@@ -30,6 +30,24 @@ def login_user(username, password):
         return [check_password_hash(result[0], password), result[1]]
     return False
 
+def add_user(username, password, role):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    hashed_password = generate_password_hash(password)
+    try:
+        c.execute("""
+            INSERT INTO login (username, password, role)
+            VALUES (?, ?, ?)
+        """, (username, hashed_password, role))
+        conn.commit()
+        return [True, "User added successfully"]
+    except sqlite3.IntegrityError:
+        return [False, "Username already exists"]
+    except sqlite3.Error as e:
+        return [False, str(e)]
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
     create_tables()
     print("Database and tables created successfully.")
