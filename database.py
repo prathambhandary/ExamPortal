@@ -149,7 +149,6 @@ def login_user(username, password):
 
     return [is_valid, result[1]]
 
-
 def add_user(username, password, role):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
@@ -175,6 +174,12 @@ def add_user(username, password, role):
     finally:
         conn.close()
 
+def delete_user(username):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("DELETE FROM login WHERE username = ?", (username,))
+    conn.commit()
+    conn.close()
 
 if __name__ == "__main__":
     create_tables()

@@ -15,14 +15,14 @@ def test_register():
     response = requests.post(
         BASE_URL + "/register",
         json={
-            "username": "admin",
-            "password": "admin123",
-            "role": "admin"
+            "username": "Rahul",
+            "password": "rahul",
+            "role": "student"
         }
     )
 
     print("\nREGISTER TEST")
-    print("Status:", response.status_code)
+    print("Status:", response.status_code)  
     print("Response:", response.json())
 
 
@@ -30,8 +30,8 @@ def test_login():
     response = requests.post(
         BASE_URL + "/login",
         json={
-            "username": "admin",
-            "password": "admin123"
+            "username": "Rahul",
+            "password": "rahul"
         }
     )
 
