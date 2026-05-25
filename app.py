@@ -21,13 +21,16 @@ def github_webhook():
     if request.headers.get('X-GitHub-Event') == 'push':
         try:
             project_dir = '/home/sharmaji/ExamPortal'
-            subprocess.run(['git', '-C', project_dir, 'pull'], check=True)
+            
+            subprocess.run(['git', '-C', project_dir, 'fetch', '--all'], check=True)
+            
+            subprocess.run(['git', '-C', project_dir, 'reset', '--hard', 'origin/main'], check=True)
             
             wsgi_file = "/var/www/sharmaji_pythonanywhere_com_wsgi.py"
             if os.path.exists(wsgi_file):
                 os.utime(wsgi_file, None)
                 
-            return jsonify({"message": "Deployment successful. ExamPortal repo synced and reloaded."}), 200
+            return jsonify({"message": "Force deployment successful. ExamPortal synced perfectly."}), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500
             
