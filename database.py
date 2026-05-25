@@ -15,7 +15,8 @@ def create_tables():
     c.execute('''CREATE TABLE IF NOT EXISTS batches (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               batch_name TEXT NOT NULL UNIQUE,
-              course TEXT NOT NULL
+              course TEXT NOT NULL,
+              year INTEGER NOT NULL
         )''')
 
     # 2. CORE USERS TABLE (Authentication)
@@ -180,6 +181,21 @@ def delete_user(username):
     c.execute("DELETE FROM login WHERE username = ?", (username,))
     conn.commit()
     conn.close()
+
+def add_batch(batch_name, course, year):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    try:
+        c.execute("INSERT INTO batches (batch_name, course, year) VALUES (?, ?, ?)", (batch_name, course, year))
+        conn.commit()
+        return [True, "Batch added successfully"]
+    except sqlite3.IntegrityError:
+        return [False, "Batch name already exists"]
+    except sqlite3.Error as e:
+        return [False, str(e)]
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     create_tables()
