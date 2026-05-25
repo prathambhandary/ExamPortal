@@ -22,12 +22,12 @@ def login_user(username, password):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
 
-    c.execute("SELECT password FROM login WHERE username = ?", (username,))
+    c.execute("SELECT password, role FROM login WHERE username = ?", (username,))
 
     result = c.fetchone()
     conn.close()
     if result:
-        return check_password_hash(result[0], password)
+        return [check_password_hash(result[0], password), result[1]]
     return False
 
 if __name__ == "__main__":
