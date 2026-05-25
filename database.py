@@ -197,7 +197,6 @@ def add_batch(batch_name, course, year):
     finally:
         conn.close()
 
-
 if __name__ == "__main__":
     create_tables()
     print("Database and tables created successfully.")
