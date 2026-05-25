@@ -11,15 +11,14 @@ database.create_tables()
 
 WEBHOOK_SECRET = os.environ.get('DEPLOY_SECRET', 'a-super-long-random-fallback-string')
 
-# 2. Dynamically attach the secret variable into your URL string route
 @app.route(f'/api/{WEBHOOK_SECRET}', methods=['POST'])
 def github_webhook():
     if request.headers.get('X-GitHub-Event') == 'push':
         try:
-            project_dir = os.path.expanduser('~/my_exam_portal') 
+            project_dir = os.path.expanduser('~/ExamPortal') 
             subprocess.run(['git', '-C', project_dir, 'pull'], check=True)
             
-            wsgi_file = os.path.expanduser('~/.pythonanywhere_wsgi.py')
+            wsgi_file = "/var/www/sharmaji_pythonanywhere_com_wsgi.py"
             if os.path.exists(wsgi_file):
                 os.utime(wsgi_file, None)
                 
