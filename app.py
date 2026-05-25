@@ -1,12 +1,33 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import database
+import subprocess
+import os
 
 app = Flask(__name__)
 CORS(app)
 
 database.create_tables()
 
+WEBHOOK_SECRET = os.environ.get('DEPLOY_SECRET', 'a-super-long-random-fallback-string')
+
+# 2. Dynamically attach the secret variable into your URL string route
+@app.route(f'/api/{WEBHOOK_SECRET}', methods=['POST'])
+def github_webhook():
+    if request.headers.get('X-GitHub-Event') == 'push':
+        try:
+            project_dir = os.path.expanduser('~/my_exam_portal') 
+            subprocess.run(['git', '-C', project_dir, 'pull'], check=True)
+            
+            wsgi_file = os.path.expanduser('~/.pythonanywhere_wsgi.py')
+            if os.path.exists(wsgi_file):
+                os.utime(wsgi_file, None)
+                
+            return jsonify({"message": "Deployment successful"}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+            
+    return jsonify({"message": "Ignored"}), 200
 
 @app.route('/')
 def home():

@@ -15,9 +15,9 @@ def test_register():
     response = requests.post(
         BASE_URL + "/register",
         json={
-            "username": "admin",
-            "password": "admin",
-            "role": "admin"
+            "username": "rahul",
+            "password": "rahul",
+            "role": "student"
         }
     )
 
