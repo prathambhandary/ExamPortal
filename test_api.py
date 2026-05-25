@@ -1,6 +1,6 @@
 import requests
 
-BASE_URL = "http://127.0.0.1:7000"
+BASE_URL = "https://sharmaji.pythonanywhere.com"
 
 
 def test_home():
@@ -15,9 +15,9 @@ def test_register():
     response = requests.post(
         BASE_URL + "/register",
         json={
-            "username": "MathsHOD",
-            "password": "maths",
-            "role": "staff"
+            "username": "admin",
+            "password": "admin123",
+            "role": "admin"
         }
     )
 
