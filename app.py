@@ -54,6 +54,24 @@ def register():
 
     return jsonify({"error": message}), 400
 
+
+@app.route("/add_batch", methods=['POST'])
+def add_batch():
+    data = request.json
+    batch_name = data.get('batch_name')
+    course = data.get('course')
+    year = data.get('year')
+    
+    if not batch_name or not course or not year:
+        return jsonify({'error': "Missing fields"}), 400
+    
+    status, message = database.add_batch(batch_name, course, year)
+    if status:
+        return jsonify({"message": message}), 201
+    return jsonify({'error': message}), 400
+    
+
+
 # Temporary
 @app.route("/delete_user", methods=['POST'])
 def delete_user():
