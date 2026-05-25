@@ -54,6 +54,17 @@ def register():
 
     return jsonify({"error": message}), 400
 
+# Temporary
+@app.route("/delete_user", methods=['POST'])
+def delete_user():
+    data = request.json
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+
+    database.delete_user(username)
+    return jsonify({"message": "User deleted successfully"}), 200
 
 if __name__ == "__main__":
     app.run(
