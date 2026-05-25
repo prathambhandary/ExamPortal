@@ -25,7 +25,7 @@ def github_webhook():
             subprocess.run(['git', '-C', project_dir, 'fetch', '--all'], check=True)
             
             subprocess.run(['git', '-C', project_dir, 'reset', '--hard', 'origin/main'], check=True)
-            
+             
             wsgi_file = "/var/www/sharmaji_pythonanywhere_com_wsgi.py"
             if os.path.exists(wsgi_file):
                 os.utime(wsgi_file, None)
