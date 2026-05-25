@@ -126,18 +126,6 @@ def create_tables():
               FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
         )''')
 
-    # 10. BOOKMARKS TABLE
-    c.execute('''CREATE TABLE IF NOT EXISTS bookmarks (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              question_id INTEGER NOT NULL,
-              notes TEXT,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              UNIQUE(user_id, question_id),
-              FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
-              FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-        )''')
-
     conn.commit()
     conn.close()
 
