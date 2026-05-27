@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 DATABASE = "nextgen.db"
 
-
 def create_tables():
     conn = get_connection()
     c = conn.cursor()
@@ -197,7 +196,7 @@ def create_tables():
     conn.close()
 
 def get_connection():
-    conn = sqlite3.connect('exam_portal.db')
+    conn = sqlite3.connect(DATABASE)
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
@@ -281,7 +280,7 @@ def get_student_profile(username):
 
     data = dict(row) if row else None
     if data:
-        data['batch_name'] = get_batch_name(data.pop('batch_id'))
+        data['batch_name'] = get_batch_name(data.pop('bat'))
 
     return data
 
