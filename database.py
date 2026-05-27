@@ -283,10 +283,13 @@ def add_student(
         c = conn.cursor()
 
         # STEP 1: CREATE LOGIN ACCOUNT
+
+        password_hash = generate_password_hash(password)
+
         c.execute("""
             INSERT INTO login (username, password, role)
             VALUES (?, ?, ?)
-        """, (username, password, "student"))
+        """, (username, password_hash, "student"))
 
         # GET GENERATED USER ID
         user_id = c.lastrowid
