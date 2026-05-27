@@ -131,18 +131,39 @@ def create_tables():
     conn.close()
 
 def get_student_profile(username):
+
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute('''SELECT sp.*, b.batch_name FROM student_profiles sp
-              JOIN login l ON sp.user_id = l.id
-              LEFT JOIN batches b ON sp.batch_id = b.id
-              WHERE l.username = ?
-        ''', (username,))
 
-    result = c.fetchone()
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT 
+            login.username,
+            student_profiles.first_name,
+            student_profiles.last_name,
+            student_profiles.roll_number,
+            student_profiles.email,
+            student_profiles.student_phone,
+            student_profiles.parent_phone,
+            student_profiles.stream,
+            student_profiles.target_year,
+            student_profiles.gender,
+            student_profiles.access
+        FROM login
+        JOIN student_profiles
+        ON login.id = student_profiles.user_id
+        WHERE login.username = ?
+    """, (username,))
+
+    row = c.fetchone()
+
     conn.close()
-    return result
+
+    if row:
+        return dict(row)
+
+    return None
 
 def login_user(username, password):
     conn = sqlite3.connect(DATABASE)
