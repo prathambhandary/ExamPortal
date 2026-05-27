@@ -197,6 +197,85 @@ def add_batch(batch_name, course, year):
     finally:
         conn.close()
 
+def register_student(
+    username,
+    password,
+    first_name,
+    last_name,
+    roll_number,
+    batch_id,
+    email,
+    student_phone,
+    parent_phone,
+    stream,
+    target_year
+):
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+
+    hashed_password = generate_password_hash(password)
+
+    try:
+        # Create login account
+        cursor.execute(
+            "INSERT INTO login (username, password, role) VALUES (?, ?, ?)",
+            (username, hashed_password, "student")
+        )
+
+        user_id = cursor.lastrowid
+
+        # Create student profile
+        cursor.execute("""
+            INSERT INTO student_profiles (
+                user_id,
+                first_name,
+                last_name,
+                roll_number,
+                batch_id,
+                email,
+                student_phone,
+                parent_phone,
+                stream,
+                target_year
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            user_id,
+            first_name,
+            last_name,
+            roll_number,
+            batch_id,
+            email,
+            student_phone,
+            parent_phone,
+            stream,
+            target_year
+        ))
+
+        conn.commit()
+
+        return [True, "Student registered successfully"]
+
+    except sqlite3.IntegrityError as e:
+        conn.rollback()
+
+        if "username" in str(e):
+            return [False, "Username already exists"]
+
+        if "roll_number" in str(e):
+            return [False, "Roll number already exists"]
+
+        if "email" in str(e):
+            return [False, "Email already exists"]
+
+        return [False, str(e)]
+
+    except sqlite3.Error as e:
+        conn.rollback()
+        return [False, str(e)]
+
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     create_tables()
