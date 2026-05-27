@@ -304,6 +304,9 @@ def search_students():
     last_name = data.get("last_name")
     username = data.get("username")
     roll_number = data.get("roll_number")
+    min_year = data.get("min_year")
+    max_year = data.get("max_year")
+    access = data.get("access")
 
     page = int(data.get("page", 1))
     limit = int(data.get("limit", 10))

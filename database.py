@@ -474,15 +474,15 @@ def all_students(
     params = []
 
     if search:
-        like = f"%{search}%"
+        like = f"%{search.lower()}%"
         query += """
             AND (
-                LOWER(login.username) LIKE LOWER(?)
-                OR LOWER(student_profiles.first_name) LIKE LOWER(?)
-                OR LOWER(student_profiles.last_name) LIKE LOWER(?)
-                OR LOWER(student_profiles.roll_number) LIKE LOWER(?)
-                OR LOWER(student_profiles.email) LIKE LOWER(?)
-                OR LOWER(student_profiles.student_phone) LIKE LOWER(?)
+                login.username LIKE ?
+                OR student_profiles.first_name LIKE ?
+                OR student_profiles.last_name LIKE ?
+                OR student_profiles.roll_number LIKE ?
+                OR student_profiles.email LIKE ?
+                OR student_profiles.student_phone LIKE ?
             )
         """
         params.extend([like]*6)
@@ -492,7 +492,7 @@ def all_students(
         params.append(batch_name)
 
     if stream:
-        query += " AND LOWER(batches.batch_name) = LOWER(?)"
+        query += " AND LOWER(student_profiles.stream) = LOWER(?)"
         params.append(stream)
 
     if target_year:
@@ -501,13 +501,13 @@ def all_students(
     
     if batch_list:
         placeholders = ",".join(["?"] * len(batch_list))
-        query += f" AND LOWER(batches.batch_name) IN ({','.join(['LOWER(?)'] * len(batch_list))})"
-        params.extend(batch_list)
+        query += f" AND LOWER(batches.batch_name) IN ({placeholders})"
+        params.extend([b.lower() for b in batch_list])
 
     if stream_list:
         placeholders = ",".join(["?"] * len(stream_list))
-        query += f" AND LOWER(student_profiles.stream) IN ({','.join(['LOWER(?)'] * len(stream_list))})"
-        params.extend(stream_list)
+        query += f" AND LOWER(student_profiles.stream) IN ({placeholders})"
+        params.extend([s.lower() for s in stream_list])
 
     if min_year is not None:
         query += " AND student_profiles.target_year >= ?"
