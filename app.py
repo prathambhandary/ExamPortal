@@ -171,9 +171,9 @@ def clear_table_endpoint(table_name):
         "error": message
     }), 500
 
-@app.route("/get_student_profile", methods=['POST'])
+@app.route("/get_student_profile", methods=['GET'])
 def get_student_profile():
-    return jsonify(database.get_student_profile("rahul")), 200
+    return jsonify(database.get_student_profile("ram")), 200
 
 if __name__ == "__main__":
     app.run(
