@@ -61,8 +61,8 @@ def login():
     if not username or not password:
         return jsonify({"error":"Username and password are required"}),400
 
-    ip_address=request.remote_addr
-    user_agent=request.headers.get("User-Agent")
+    ip_address=data.get("ip_address")
+    user_agent=data.get("User-Agent")
 
     is_valid=database.login_user(username,password)
 
