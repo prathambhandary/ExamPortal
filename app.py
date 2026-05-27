@@ -151,6 +151,26 @@ def add_student_endpoint():
         "error": message
     }), 400
 
+@app.route("/clear_table/<table_name>", methods=["GET"])
+def clear_table_endpoint(table_name):
+    allowed_tables = [
+        "batches",
+        "login",
+        "student_profiles"
+    ]
+    if table_name not in allowed_tables:
+        return jsonify({
+            "error": "Invalid table name"
+        }), 400
+    status, message = database.clear_table(table_name)
+    if status:
+        return jsonify({
+            "message": message
+        }), 200
+    return jsonify({
+        "error": message
+    }), 500
+
 @app.route("/get_student_profile", methods=['POST'])
 def get_student_profile():
     return jsonify(database.get_student_profile("rahul")), 200

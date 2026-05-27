@@ -73,12 +73,28 @@ def test_get_batches():
     print("Status:", response.status_code)
     print("Response:", response.json())
 
+def test_register_student():
+    data = {
+        "username": "ram",
+        "password": "ram",
+        "first_name": "Ram",
+        "last_name": "Sharma",
+        "roll_number": "CS005",
+        "batch_name": "JEE2026",
+        "email": "aarav@example.com",
+        "student_phone": "9876543210",
+        "parent_phone": "9123456780",
+        "stream": "PCMC",
+        "target_year": 2027,
+        "gender": "Male",
+        "current_role": "admin"
+    }
 
 
 if __name__ == "__main__":
     test_home()
-    test_register()
+    # test_register()
     # test_login()
     # test_delete_user()
     # test_add_batch()
-    # test_get_batches()
+    test_get_batches()

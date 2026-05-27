@@ -329,6 +329,18 @@ def ensure_gender_column():
 
     conn.close()
 
+def clear_table(table_name):
+    conn = sqlite3.connect(DATABASE)
+    try:
+        c = conn.cursor()
+        c.execute(f"DELETE FROM {table_name}")
+        conn.commit()
+        return True, f"{table_name} cleared successfully"
+    except Exception as e:
+        return False, str(e)
+    finally:
+        conn.close()
+
 # print(get_student_profile("rahul"))
 
 ensure_gender_column()
