@@ -57,6 +57,7 @@ def login():
     if is_valid[0] and is_valid[1] == "student":
         if profile_data.get("access") == 0:
             return jsonify(("error", "Access denied")), 403
+        
         return jsonify({
                 "message": "Login successful", 
                 "role": is_valid[1],
@@ -228,7 +229,7 @@ def grant_access():
     
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
-    
+
     if data.get("current_role") != "admin":
         return jsonify({"error": "Unauthorized Access"}), 403
     
@@ -242,6 +243,18 @@ def grant_access():
     
     return jsonify({'error': message}), 400
 
+@app.route("/get_all_student_profile_admin", methods=['POST'])
+def get_all_student_profiles():
+    data = request.json
+
+    if data is None:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+
+    if data.get("current_role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 403
+    
+    profiles = database.all()
+    return jsonify(profiles), 200
 
 if __name__ == "__main__":
     app.run(
