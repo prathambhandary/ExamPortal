@@ -102,37 +102,38 @@ def get_batch_names():
 
 # one more route
 @app.route("/register_student", methods=['POST'])
-def register_student():
+def add_student_endpoint():
 
     data = request.json
 
     required_fields = [
-        'username',
-        'password',
-        'first_name',
-        'roll_number',
-        'stream',
-        'target_year'
+        "username",
+        "password",
+        "first_name",
+        "roll_number",
+        "stream",
+        "target_year"
     ]
 
+    # CHECK REQUIRED FIELDS
     for field in required_fields:
-        if not data.get(field):
+        if field not in data or not data[field]:
             return jsonify({
-                "error": f"{field} is required"
+                "error": f"Missing required field: {field}"
             }), 400
 
     status, message = database.add_student(
-        data.get('username'),
-        data.get('password'),
-        data.get('first_name'),
-        data.get('last_name'),
-        data.get('roll_number'),
-        data.get('batch_id'),
-        data.get('email'),
-        data.get('student_phone'),
-        data.get('parent_phone'), 
-        data.get('stream'),
-        data.get('target_year')
+        username=data.get("username"),
+        password=data.get("password"),
+        first_name=data.get("first_name"),
+        last_name=data.get("last_name"),
+        roll_number=data.get("roll_number"),
+        batch_name=data.get("batch_name"),
+        email=data.get("email"),
+        student_phone=data.get("student_phone"),
+        parent_phone=data.get("parent_phone"),
+        stream=data.get("stream"),
+        target_year=data.get("target_year")
     )
 
     if status:
