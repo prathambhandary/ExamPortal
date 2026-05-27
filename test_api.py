@@ -100,9 +100,9 @@ def test_register_student():
 
 if __name__ == "__main__":
     test_home()
-    test_register()
+    # test_register()
     # test_login()
     # test_delete_user()
     # test_add_batch()
     # test_get_batches()
-    # test_register_student()
+    test_register_student()
