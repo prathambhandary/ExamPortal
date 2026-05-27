@@ -131,6 +131,39 @@ def create_tables():
     conn.commit()
     conn.close()
 
+def create_indexes():
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    c.executescript("""
+        CREATE INDEX IF NOT EXISTS idx_login_username
+        ON login(username);
+
+        CREATE INDEX IF NOT EXISTS idx_student_first_name
+        ON student_profiles(first_name);
+
+        CREATE INDEX IF NOT EXISTS idx_student_last_name
+        ON student_profiles(last_name);
+
+        CREATE INDEX IF NOT EXISTS idx_student_roll_number
+        ON student_profiles(roll_number);
+
+        CREATE INDEX IF NOT EXISTS idx_student_stream
+        ON student_profiles(stream);
+
+        CREATE INDEX IF NOT EXISTS idx_student_target_year
+        ON student_profiles(target_year);
+
+        CREATE INDEX IF NOT EXISTS idx_student_access
+        ON student_profiles(access);
+
+        CREATE INDEX IF NOT EXISTS idx_batches_name
+        ON batches(batch_name);
+    """)
+
+    conn.commit()
+    conn.close()
+
 def get_student_profile(username):
 
     conn = sqlite3.connect(DATABASE)
@@ -569,7 +602,7 @@ def all_students(
 
     query += f"""
         ORDER BY {sort_column} {sort_direction},
-        student_profiles.id DESC
+        student_profiles.user_id DESC
     """
 
     # -----------------------
@@ -587,4 +620,4 @@ def all_students(
 
 if __name__ == "__main__":
     create_tables()
-    print("Database and tables created successfully.")
+    create_indexes()
