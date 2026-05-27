@@ -1,7 +1,7 @@
 import requests
 
-# BASE_URL = "https://sharmaji.pythonanywhere.com"
-BASE_URL = "http://127.0.0.1:7000"
+BASE_URL = "https://sharmaji.pythonanywhere.com"
+# BASE_URL = "http://127.0.0.1:7000"
 
 
 def test_home():
@@ -16,9 +16,9 @@ def test_register():
     response = requests.post(
         BASE_URL + "/register",
         json={
-            "username": "rahul",
-            "password": "rahul",
-            "role": "student"
+            "username": "maths",
+            "password": "maths",
+            "role": "staff"
         }
     )
 
@@ -73,10 +73,12 @@ def test_get_batches():
     print("Status:", response.status_code)
     print("Response:", response.json())
 
+
+
 if __name__ == "__main__":
     test_home()
-    # test_register()
+    test_register()
     # test_login()
     # test_delete_user()
-    test_add_batch()
-    test_get_batches()
+    # test_add_batch()
+    # test_get_batches()

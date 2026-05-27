@@ -40,8 +40,6 @@ def github_webhook():
 def home():
     return "Server Running..."
 
-
-
 @app.route('/login', methods=['POST'])
 def login():
 
@@ -59,7 +57,6 @@ def login():
         return jsonify({"message": "Login successful", "role": is_valid[1]}), 200
 
     return jsonify({"error": "Invalid username or password"}), 401
-
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -82,7 +79,6 @@ def register():
         return jsonify({"message": message}), 201
 
     return jsonify({"error": message}), 400
-
 
 @app.route("/add_batch", methods=['POST'])
 def add_batch():
