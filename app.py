@@ -99,8 +99,11 @@ def add_batch():
         return jsonify({"message": message}), 201
     return jsonify({'error': message}), 400
     
+@app.route("/get_batches", methods=['GET'])
+def get_batches():
+    batches = database.get_batches()
+    return jsonify(batches), 200
 
-    
 # one more route
 @app.route("/register_student", methods=['POST'])
 def register_student():

@@ -277,6 +277,14 @@ def register_student(
     finally:
         conn.close()
 
+def all_batches():
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT batch_name FROM batches")
+    batches = c.fetchall()
+    conn.close()
+    return batches
+
 if __name__ == "__main__":
     create_tables()
     print("Database and tables created successfully.")
