@@ -71,10 +71,10 @@ def login():
     if not is_valid[0]:
 
         database.add_login_log(
-            user_id,
-            ip_address,
-            user_agent,
-            False
+            user_id=user_id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=False
         )
 
         return jsonify({"error":"Invalid username or password"}),401
@@ -83,10 +83,10 @@ def login():
     profile_data=is_valid[2] if len(is_valid)>2 else None
 
     database.add_login_log(
-        user_id,
-        ip_address,
-        user_agent,
-        True
+        user_id=user_id,
+        ip_address=ip_address,
+        user_agent=user_agent,
+        success=True
     )
 
     token=create_access_token(

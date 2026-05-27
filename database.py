@@ -800,10 +800,6 @@ def all_students(
 
     return rows
 
-def add_login_logs():
-    conn = get_connection()
-    c = conn.cursor()
-
 def add_login_log(user_id, success, ip_address=None, user_agent=None):
     conn=sqlite3.connect(DATABASE)
     c=conn.cursor()
