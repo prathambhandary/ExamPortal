@@ -292,7 +292,7 @@ def search_students():
 
     claims = get_jwt()
     if claims.get("role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 40
+        return jsonify({"error": "Unauthorized Access"}), 403
 
     search = data.get("search", "")
     batch_name = data.get("batch_name")
