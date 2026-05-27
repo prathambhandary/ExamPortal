@@ -196,86 +196,6 @@ def add_batch(batch_name, course, year):
     finally:
         conn.close()
 
-def register_student(
-    username,
-    password,
-    first_name,
-    last_name,
-    roll_number,
-    batch_id,
-    email,
-    student_phone,
-    parent_phone,
-    stream,
-    target_year
-):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-
-    hashed_password = generate_password_hash(password)
-
-    try:
-        # Create login account
-        cursor.execute(
-            "INSERT INTO login (username, password, role) VALUES (?, ?, ?)",
-            (username, hashed_password, "student")
-        )
-
-        user_id = cursor.lastrowid
-
-        # Create student profile
-        cursor.execute("""
-            INSERT INTO student_profiles (
-                user_id,
-                first_name,
-                last_name,
-                roll_number,
-                batch_id,
-                email,
-                student_phone,
-                parent_phone,
-                stream,
-                target_year
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            user_id,
-            first_name,
-            last_name,
-            roll_number,
-            batch_id,
-            email,
-            student_phone,
-            parent_phone,
-            stream,
-            target_year
-        ))
-
-        conn.commit()
-
-        return [True, "Student registered successfully"]
-
-    except sqlite3.IntegrityError as e:
-        conn.rollback()
-
-        if "username" in str(e):
-            return [False, "Username already exists"]
-
-        if "roll_number" in str(e):
-            return [False, "Roll number already exists"]
-
-        if "email" in str(e):
-            return [False, "Email already exists"]
-
-        return [False, str(e)]
-
-    except sqlite3.Error as e:
-        conn.rollback()
-        return [False, str(e)]
-
-    finally:
-        conn.close()
-
 def all_batches():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -298,6 +218,93 @@ def all_batches():
     conn.close()
 
     return batches
+
+def get_batch_id(batch_name):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT id FROM batches WHERE batch_name = ?", (batch_name,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None
+
+def add_student(
+    username,
+    password,
+    first_name,
+    last_name,
+    roll_number,
+    batch_name,
+    email,
+    student_phone,
+    parent_phone,
+    stream,
+    target_year
+):
+    conn = sqlite3.connect(DATABASE)
+
+    try:
+        c = conn.cursor()
+
+        # STEP 1: CREATE LOGIN ACCOUNT
+        c.execute("""
+            INSERT INTO login (username, password, role)
+            VALUES (?, ?, ?)
+        """, (username, password, "student"))
+
+        # GET GENERATED USER ID
+        user_id = c.lastrowid
+
+        # STEP 2: CREATE STUDENT PROFILE
+        c.execute("""
+            INSERT INTO student_profiles (
+                user_id,
+                first_name,
+                last_name,
+                roll_number,
+                batch_id,
+                email,
+                student_phone,
+                parent_phone,
+                stream,
+                target_year
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            user_id,
+            first_name,
+            last_name,
+            roll_number,
+            get_batch_id(batch_name),
+            email,
+            student_phone,
+            parent_phone,
+            stream,
+            target_year
+        ))
+
+        conn.commit()
+
+        return True, "Student added successfully"
+
+    except sqlite3.IntegrityError as e:
+        conn.rollback()
+
+        return False, f"Integrity Error: {str(e)}"
+
+    except Exception as e:
+        conn.rollback()
+
+        return False, f"Error: {str(e)}"
+
+    finally:
+        conn.close()
+
+
+
+
+
+
+
 if __name__ == "__main__":
     create_tables()
     print("Database and tables created successfully.")
