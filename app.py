@@ -38,7 +38,7 @@ def github_webhook():
 
 @app.route('/')
 def home():
-    return "Server Running..."
+    return jsonify({"message": "Server is live"}), 200
 
 @app.route('/login', methods=['POST'])
 def login():
