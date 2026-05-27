@@ -84,6 +84,7 @@ def login():
 
 @app.route('/register', methods=['POST'])  #security risk
 def register():
+    return {'message': 'closed'}, 200
 
     data = request.json
     username = data.get('username')
@@ -177,6 +178,7 @@ def add_student_endpoint():
 
 @app.route("/clear_table/<table_name>", methods=["GET"]) #security risk
 def clear_table_endpoint(table_name):
+    return {'message': 'closed'}, 200
     allowed_tables = [
         "batches",
         "login",
@@ -197,10 +199,12 @@ def clear_table_endpoint(table_name):
 
 @app.route("/get_student_profile", methods=['GET']) # security risk
 def get_student_profile():
+    return {'message': 'closed'}, 200
     return jsonify(database.get_student_profile("ram")), 200
 
 @app.route("/login_table", methods=['GET']) # security risk
 def get_login_table():
+    return {'message': 'closed'}, 200
     return jsonify(database.get_login_table()), 200
 
 @app.route("/revoke_access", methods=['POST'])
@@ -276,7 +280,7 @@ def search_students():
     limit = int(data.get("limit", 10))
     offset = (page - 1) * limit
 
-    rows = database.search_students_db(
+    rows = database.all_students(
         search=search,
         batch_name=batch_name,
         stream=stream,
