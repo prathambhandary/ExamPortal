@@ -54,10 +54,9 @@ def login():
     is_valid = database.login_user(username, password)
     profile_data = is_valid[2] if len(is_valid) > 2 else None
 
-    if profile_data.get("access") == 0:
-        return jsonify(("error", "Access denied")), 403
-
     if is_valid[0] and is_valid[1] == "student":
+        if profile_data.get("access") == 0:
+            return jsonify(("error", "Access denied")), 403
         return jsonify({
                 "message": "Login successful", 
                 "role": is_valid[1],
