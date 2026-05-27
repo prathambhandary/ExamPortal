@@ -175,6 +175,10 @@ def clear_table_endpoint(table_name):
 def get_student_profile():
     return jsonify(database.get_student_profile("ram")), 200
 
+@app.route("/login_table", methods=['GET'])
+def get_login_table():
+    return jsonify(database.get_login_table()), 200
+
 if __name__ == "__main__":
     app.run(
         debug=True,

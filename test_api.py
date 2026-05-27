@@ -16,9 +16,9 @@ def test_register():
     response = requests.post(
         BASE_URL + "/register",
         json={
-            "username": "maths",
-            "password": "maths",
-            "role": "staff"
+            "username": "admin",
+            "password": "admin",
+            "role": "admin"
         }
     )
 
@@ -81,20 +81,28 @@ def test_register_student():
         "last_name": "Sharma",
         "roll_number": "CS005",
         "batch_name": "JEE2026",
-        "email": "aarav@example.com",
-        "student_phone": "9876543210",
-        "parent_phone": "9123456780",
+        "email": "ram@example.com",
+        "student_phone": "1452345678",
+        "parent_phone":  "6548451211",
         "stream": "PCMC",
         "target_year": 2027,
         "gender": "Male",
         "current_role": "admin"
     }
 
+    response = requests.post(
+        BASE_URL+"/register_student",
+        json=data
+    )
+    print("\nREGISTER STUDENT TEST")
+    print("Status:", response.status_code)
+    print("Response:", response.json())
 
 if __name__ == "__main__":
     test_home()
-    # test_register()
+    test_register()
     # test_login()
     # test_delete_user()
     # test_add_batch()
-    test_get_batches()
+    # test_get_batches()
+    # test_register_student()

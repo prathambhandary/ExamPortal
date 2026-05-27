@@ -364,6 +364,15 @@ def clear_table(table_name):
 
 # print(get_student_profile("rahul"))
 
+def get_login_table():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+
+    c = conn.cursor()
+
+    c.execute("select * from login")
+    return [dict(row) for row in c.fetchall()]
+
 ensure_gender_column()
 
 if __name__ == "__main__":
