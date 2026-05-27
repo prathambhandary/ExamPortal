@@ -40,6 +40,7 @@ def create_tables():
               stream TEXT NOT NULL,
               target_year INTEGER,
               access INTEGER DEFAULT 1,
+              gender TEXT,
               FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
               FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE SET NULL
         )''')
@@ -238,7 +239,8 @@ def add_student(
     student_phone,
     parent_phone,
     stream,
-    target_year
+    target_year,
+    gender
 ):
     conn = sqlite3.connect(DATABASE)
 
@@ -299,11 +301,21 @@ def add_student(
     finally:
         conn.close()
 
+def ensure_gender_column():
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    c.execute("PRAGMA table_info(student_profiles)")
+    
+    if "gender" not in [col[1] for col in c.fetchall()]:
+        c.execute("ALTER TABLE student_profiles ADD COLUMN gender TEXT")
+        conn.commit()
+
+    conn.close()
 
 
 
-
-
+ensure_gender_column()
 
 if __name__ == "__main__":
     create_tables()

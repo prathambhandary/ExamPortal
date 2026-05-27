@@ -138,7 +138,8 @@ def add_student_endpoint():
         student_phone=data.get("student_phone"),
         parent_phone=data.get("parent_phone"),
         stream=data.get("stream"),
-        target_year=data.get("target_year")
+        target_year=data.get("target_year"),
+        gender=data.get("gender", "").title()
     )
 
     if status:
