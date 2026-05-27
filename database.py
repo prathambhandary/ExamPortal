@@ -149,7 +149,8 @@ def get_student_profile(username):
             student_profiles.stream,
             student_profiles.target_year,
             student_profiles.gender,
-            student_profiles.access
+            student_profiles.access,
+            student_profiles.batch_id      
         FROM login
         JOIN student_profiles
         ON login.id = student_profiles.user_id
@@ -264,6 +265,14 @@ def get_batch_id(batch_name):
     conn.close()
     return result[0] if result else None
 
+def get_batch_name(batch_id):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT batch_name FROM batches WHERE id = ?", (batch_id,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None
+
 def add_student(
     username,
     password,
@@ -374,6 +383,13 @@ def get_login_table():
 
     c.execute("select * from login")
     return [dict(row) for row in c.fetchall()]
+
+def revoke_access(username):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    
+    # try:
+    #     c.execute("UPDATE student_profiles SET access = 0 WHERE user_id = ")
 
 if __name__ == "__main__":
     create_tables()
