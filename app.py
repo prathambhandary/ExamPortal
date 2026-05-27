@@ -221,10 +221,24 @@ def clear_table_endpoint(table_name):
         "error": message
     }), 500
 
-@app.route("/get_student_profile", methods=['GET']) # security risk
+@app.route("/get_student_profile", methods=['POST'])
+@jwt_required()
+@admin_required
 def get_student_profile():
-    return {'message': 'closed'}, 200
-    return jsonify(database.get_student_profile("ram")), 200
+    data = request.json
+
+    if data is None:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+    
+    username = data.get('username')
+    if not username:
+        return jsonify({'error': 'Username is required'}), 400
+
+    profile = database.get_student_profile(username)
+    if profile:
+        return jsonify(profile), 200
+    
+    return jsonify({'error': 'Student not found'}), 404
 
 @app.route("/login_table", methods=['GET']) # security risk
 def get_login_table():
@@ -344,6 +358,8 @@ def search_students():
         "count": len(payload),
         "data": payload
     }), 200
+
+
 
 if __name__ == "__main__":
     app.run(
