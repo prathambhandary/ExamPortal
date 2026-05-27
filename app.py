@@ -62,7 +62,7 @@ def login():
         return jsonify({"error":"Username and password are required"}),400
 
     ip_address=data.get("ip_address")
-    user_agent=data.get("User-Agent")
+    user_agent=data.get("user_agent")
 
     is_valid=database.login_user(username,password)
 
