@@ -236,6 +236,7 @@ def get_student_profile():
 
     profile = database.get_student_profile(username)
     if profile:
+        print(profile)
         return jsonify(profile), 200
     
     return jsonify({'error': 'Student not found'}), 404

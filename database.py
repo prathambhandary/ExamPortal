@@ -288,8 +288,8 @@ def get_student_profile(username):
 
     data = dict(row) if row else None
     print("DEBUG:", data)
-    if data and data['batch_name'] is not None:
-        data['batch_name'] = get_batch_name(data['batch_id'])
+    # if data and data['batch_name'] is not None:
+        # data['batch_name'] = get_batch_name(data['batch_id'])
 
     return data
 
