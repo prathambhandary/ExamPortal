@@ -58,7 +58,7 @@ def login():
 
     return jsonify({"error": "Invalid username or password"}), 401
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['POST'])  #security risk
 def register():
 
     data = request.json
@@ -100,11 +100,16 @@ def get_batch_names():
     batches = database.all_batches()
     return jsonify(batches), 200
 
-# one more route
 @app.route("/register_student", methods=['POST'])
 def add_student_endpoint():
 
     data = request.json
+
+    if data is None:
+        return jsonify({"error": "Invaild JSON data"}), 400
+    
+    if data.get("current_role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 403
 
     required_fields = [
         "username",
