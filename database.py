@@ -329,7 +329,7 @@ def ensure_gender_column():
 
     conn.close()
 
-
+# print(get_student_profile("rahul"))
 
 ensure_gender_column()
 

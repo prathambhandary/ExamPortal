@@ -151,6 +151,9 @@ def add_student_endpoint():
         "error": message
     }), 400
 
+@app.route("/get_student_profile", methods=['POST'])
+def get_student_profile():
+    return jsonify(database.get_student_profile("rahul")), 200
 
 if __name__ == "__main__":
     app.run(
