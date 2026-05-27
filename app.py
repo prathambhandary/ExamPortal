@@ -52,9 +52,23 @@ def login():
         return jsonify({"error": "Username and password are required"}), 400
 
     is_valid = database.login_user(username, password)
+    profile_data = is_valid[2] if len(is_valid) > 2 else None
 
     if is_valid[0]:
-        return jsonify({"message": "Login successful", "role": is_valid[1]}), 200
+        return jsonify({
+                "message": "Login successful", 
+                "role": is_valid[1],
+                "username": username,
+                "first_name": profile_data.get("first_name"),
+                "last_name": profile_data.get("last_name"),
+                "roll_number": profile_data.get("roll_number"),
+                "email": profile_data.get("email"),
+                "student_phone": profile_data.get("student_phone"),
+                "parent_phone": profile_data.get("parent_phone"),
+                "stream": profile_data.get("stream"),
+                "target_year": profile_data.get("target_year"),
+                "gender": profile_data.get("gender")
+            }), 200
 
     return jsonify({"error": "Invalid username or password"}), 401
 
@@ -151,7 +165,7 @@ def add_student_endpoint():
         "error": message
     }), 400
 
-@app.route("/clear_table/<table_name>", methods=["GET"])
+@app.route("/clear_table/<table_name>", methods=["GET"]) #security risk
 def clear_table_endpoint(table_name):
     allowed_tables = [
         "batches",
@@ -171,11 +185,11 @@ def clear_table_endpoint(table_name):
         "error": message
     }), 500
 
-@app.route("/get_student_profile", methods=['GET'])
+@app.route("/get_student_profile", methods=['GET']) #security risk
 def get_student_profile():
     return jsonify(database.get_student_profile("ram")), 200
 
-@app.route("/login_table", methods=['GET'])
+@app.route("/login_table", methods=['GET']) #security risk
 def get_login_table():
     return jsonify(database.get_login_table()), 200
 

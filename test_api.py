@@ -105,4 +105,4 @@ if __name__ == "__main__":
     # test_delete_user()
     # test_add_batch()
     # test_get_batches()
-    test_register_student()
+    # test_register_student()

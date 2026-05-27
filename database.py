@@ -175,6 +175,7 @@ def login_user(username, password):
     )
 
     result = cursor.fetchone()
+    data = get_student_profile(username)
 
     conn.close()
 
@@ -183,7 +184,7 @@ def login_user(username, password):
 
     is_valid = check_password_hash(result[0], password)
 
-    return [is_valid, result[1]]
+    return [is_valid, result[1], data]
 
 def add_user(username, password, role):
     conn = sqlite3.connect(DATABASE)
@@ -365,8 +366,6 @@ def clear_table(table_name):
     finally:
         conn.close()
 
-# print(get_student_profile("rahul"))
-
 def get_login_table():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -375,8 +374,6 @@ def get_login_table():
 
     c.execute("select * from login")
     return [dict(row) for row in c.fetchall()]
-
-ensure_gender_column()
 
 if __name__ == "__main__":
     create_tables()
