@@ -279,8 +279,8 @@ def get_student_profile(username):
     conn.close()
 
     data = dict(row) if row else None
-    if data:
-        data['batch_name'] = get_batch_name(data.pop('batch_id'))
+    if data and data['batch_name'] is not None:
+        data['batch_name'] = get_batch_name(data['batch_id'])
 
     return data
 
