@@ -213,7 +213,15 @@ def revoke_access():
     if data.get("current_role") != "admin":
         return jsonify({"error": "Unauthorized Access"}), 403
     
+    username = data.get('username')  
+    if not username:
+        return jsonify({'error': 'Username required'}), 400  
 
+    status, message = database.revoke_access(username)
+    if status:
+        return jsonify({'message': message}), 200
+    
+    return jsonify({'error': message}), 400
 
 if __name__ == "__main__":
     app.run(
