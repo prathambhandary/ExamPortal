@@ -99,9 +99,49 @@ def add_batch():
         return jsonify({"message": message}), 201
     return jsonify({'error': message}), 400
     
+# one more route
+@app.route("/register_student", methods=['POST'])
+def register_student():
 
+    data = request.json
 
-# Temporary
+    required_fields = [
+        'username',
+        'password',
+        'first_name',
+        'roll_number',
+        'stream',
+        'target_year'
+    ]
+
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({
+                "error": f"{field} is required"
+            }), 400
+
+    status, message = database.add_student(
+        data.get('username'),
+        data.get('password'),
+        data.get('first_name'),
+        data.get('last_name'),
+        data.get('roll_number'),
+        data.get('batch_id'),
+        data.get('email'),
+        data.get('student_phone'),
+        data.get('parent_phone'),
+        data.get('stream'),
+        data.get('target_year')
+    )
+
+    if status:
+        return jsonify({
+            "message": message
+        }), 201
+
+    return jsonify({
+        "error": message
+    }), 400
 
 
 
