@@ -420,6 +420,8 @@ def all():
 
     c.execute("SELECT login.username, student_profiles.first_name, student_profiles.last_name, student_profiles.roll_number, student_profiles.batch_id, student_profiles.email, student_profiles.student_phone, student_profiles.parent_phone, student_profiles.stream, student_profiles.target_year, student_profiles.access, student_profiles.gender FROM login JOIN student_profiles ON login.id = student_profiles.user_id;")
     students = [dict(row) for row in c.fetchall()]
+    for student in students:
+        student["batch_name"] = get_batch_name(student.pop("batch_id"))
 
     return {
         "batches": batches,
