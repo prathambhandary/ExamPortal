@@ -248,6 +248,14 @@ def create_indexes():
     conn.commit()
     conn.close()
 
+def get_batch_name(batch_id):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("SELECT batch_name FROM batches WHERE id = ?", (batch_id,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None
+
 def get_student_profile(username):
     conn = get_connection()
     conn.row_factory = sqlite3.Row
