@@ -31,8 +31,8 @@ def test_login():
     response = requests.post(
         BASE_URL + "/login",
         json={
-            "username": "admin",
-            "password": "admin"
+            "username": "rahul",
+            "password": "rahul"
         }
     )
 
@@ -128,10 +128,10 @@ def test_profiles():
 if __name__ == "__main__":
     test_home()
     # test_register()
-    # test_login()
+    test_login()
     # test_delete_user()
     # test_add_batch()
     # test_get_batches()
     # test_register_student()
     # test_all()
-    test_profiles()
+    # test_profiles()

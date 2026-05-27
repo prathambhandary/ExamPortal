@@ -53,52 +53,81 @@ def home():
 @app.route('/login', methods=['POST'])
 def login():
 
-    data = request.json
+    data=request.get_json(silent=True) or {}
 
-    username = data.get('username')
-    password = data.get('password')
+    username=data.get('username')
+    password=data.get('password')
 
     if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
+        return jsonify({"error":"Username and password are required"}),400
 
-    is_valid = database.login_user(username, password)
-    profile_data = is_valid[2] if len(is_valid) > 2 else None
+    ip_address=request.remote_addr
+    user_agent=request.headers.get("User-Agent")
 
-    if is_valid[0] and is_valid[1] == "admin":
-        token = create_access_token(identity=username, additional_claims={"role": is_valid[1]})
+    is_valid=database.login_user(username,password)
+
+    user_id=database.get_user_id(username)
+
+    if not is_valid[0]:
+
+        database.add_login_log(
+            user_id,
+            ip_address,
+            user_agent,
+            False
+        )
+
+        return jsonify({"error":"Invalid username or password"}),401
+
+    role=is_valid[1]
+    profile_data=is_valid[2] if len(is_valid)>2 else None
+
+    database.add_login_log(
+        user_id,
+        ip_address,
+        user_agent,
+        True
+    )
+
+    token=create_access_token(
+        identity=username,
+        additional_claims={"role":role}
+    )
+
+    if role=="admin":
         return jsonify({
-            "message": "Login successful",
-            "access_token": token,
-            "role": is_valid[1]
-        })
+            "message":"Login successful",
+            "access_token":token,
+            "role":role
+        }),200
 
-    if is_valid[0] and is_valid[1] == "student":
-        if profile_data.get("access") == 0:
-            return jsonify(("error", "Access denied")), 403
-        
-        return jsonify({
-                "message": "Login successful", 
-                "role": is_valid[1],
-                "username": username,
-                "first_name": profile_data.get("first_name"),
-                "last_name": profile_data.get("last_name"),
-                "roll_number": profile_data.get("roll_number"),
-                "email": profile_data.get("email"),
-                "student_phone": profile_data.get("student_phone"),
-                "parent_phone": profile_data.get("parent_phone"),
-                "stream": profile_data.get("stream"),
-                "target_year": profile_data.get("target_year"),
-                "gender": profile_data.get("gender"),
-                "batch_name": profile_data.get("batch_name")
-            }), 200
-    
-    if is_valid[0]:
-        return jsonify({
-                "message": "Login successful", 
-                "role": is_valid[1]
-            })
+    if role=="student":
 
-    return jsonify({"error": "Invalid username or password"}), 401
+        if profile_data.get("access")==0:
+            return jsonify({"error":"Access denied"}),403
+
+        return jsonify({
+            "message":"Login successful",
+            "access_token":token,
+            "role":role,
+            "username":username,
+            "first_name":profile_data.get("first_name"),
+            "last_name":profile_data.get("last_name"),
+            "roll_number":profile_data.get("roll_number"),
+            "email":profile_data.get("email"),
+            "student_phone":profile_data.get("student_phone"),
+            "parent_phone":profile_data.get("parent_phone"),
+            "stream":profile_data.get("stream"),
+            "target_year":profile_data.get("target_year"),
+            "gender":profile_data.get("gender"),
+            "batch_name":profile_data.get("batch_name")
+        }),200
+
+    return jsonify({
+        "message":"Login successful",
+        "access_token":token,
+        "role":role
+    }),200
 
 @app.route('/register', methods=['POST'])  #security risk
 def register():
@@ -360,7 +389,24 @@ def search_students():
         "data": payload
     }), 200
 
+@app.route("/login_logs",methods=["POST"])
+@jwt_required()
+@admin_required
+def login_logs():
+    data=request.get_json(silent=True) or {}
 
+    page=int(data.get("page",1))
+    limit=int(data.get("limit",50))
+    offset=(page-1)*limit
+
+    logs=database.get_login_logs(limit,offset)
+
+    return jsonify({
+        "page":page,
+        "limit":limit,
+        "count":len(logs),
+        "logs":logs
+    }),200
 
 if __name__ == "__main__":
     app.run(

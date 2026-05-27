@@ -800,6 +800,66 @@ def all_students(
 
     return rows
 
+def add_login_logs():
+    conn = get_connection()
+    c = conn.cursor()
+
+def add_login_log(user_id, success, ip_address=None, user_agent=None):
+    conn=sqlite3.connect(DATABASE)
+    c=conn.cursor()
+
+    try:
+        c.execute("""
+            INSERT INTO login_logs(user_id,ip_address,user_agent,success)
+            VALUES(?,?,?,?)
+        """,(user_id,ip_address,user_agent,int(success)))
+
+        conn.commit()
+        return True
+
+    except Exception:
+        conn.rollback()
+        return False
+
+    finally:
+        conn.close()
+
+def get_user_id(username):
+    conn=sqlite3.connect(DATABASE)
+    c=conn.cursor()
+
+    c.execute("SELECT id FROM login WHERE username=?",(username,))
+    row=c.fetchone()
+
+    conn.close()
+
+    return row[0] if row else None
+
+def get_login_logs(limit=100,offset=0):
+    conn=sqlite3.connect(DATABASE)
+    conn.row_factory=sqlite3.Row
+    c=conn.cursor()
+
+    c.execute("""
+        SELECT
+            login_logs.id,
+            login.username,
+            login_logs.ip_address,
+            login_logs.user_agent,
+            login_logs.login_time,
+            login_logs.success
+        FROM login_logs
+        LEFT JOIN login
+        ON login.id=login_logs.user_id
+        ORDER BY login_logs.id DESC
+        LIMIT ? OFFSET ?
+    """,(limit,offset))
+
+    rows=[dict(row) for row in c.fetchall()]
+
+    conn.close()
+
+    return rows
 
 if __name__ == "__main__":
     create_tables()
