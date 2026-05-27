@@ -291,6 +291,27 @@ def all_batches():
 
     return batches
 
+def all_streams():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT DISTINCT stream FROM student_profiles WHERE stream IS NOT NULL")
+
+    rows = c.fetchall()
+
+    streams = []
+    
+    for row in rows:
+        streams.append({
+            "stream": row["stream"]
+        })
+
+    print("Fetched streams:", streams)
+
+    conn.close()
+
+    return streams
+
 def get_batch_id(batch_name):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()

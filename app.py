@@ -143,6 +143,11 @@ def get_batch_names():
     batches = database.all_batches()
     return jsonify(batches), 200
 
+@app.route("/get_streams", methods=['GET'])
+def get_stream_names():
+    streams = database.all_streams()
+    return jsonify(streams), 200
+
 @app.route("/register_student", methods=['POST'])
 @jwt_required()
 def add_student_endpoint():
