@@ -387,9 +387,15 @@ def get_login_table():
 def revoke_access(username):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    
-    # try:
-    #     c.execute("UPDATE student_profiles SET access = 0 WHERE user_id = ")
+    try:
+        c.execute("UPDATE student_profiles SET access = 0 WHERE user_id = (SELECT id FROM login WHERE username = ?)", (username,))
+        conn.commit()
+        return True, "Access revoked successfully"
+    except Exception as e:
+        conn.rollback()
+        return False, str(e)
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     create_tables()
