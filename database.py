@@ -439,6 +439,10 @@ def all_students(
     min_year=None,
     max_year=None,
     access=None,
+    first_name=None,
+    last_name=None,
+    username=None,
+    roll_number=None,
     sort_by="username",
     sort_order="asc",
     limit=10,
@@ -516,6 +520,22 @@ def all_students(
     if access is not None:
         query += " AND student_profiles.access = ?"
         params.append(access)
+
+    if username:
+        query += " AND LOWER(login.username) = LOWER(?)"
+        params.append(username)
+
+    if first_name:
+        query += " AND LOWER(student_profiles.first_name) = LOWER(?)"
+        params.append(first_name)
+
+    if last_name:
+        query += " AND LOWER(student_profiles.last_name) = LOWER(?)"
+        params.append(last_name)
+
+    if roll_number:
+        query += " AND LOWER(student_profiles.roll_number) = LOWER(?)"
+        params.append(roll_number)
 
     allowed_sort = {
         "username": "login.username",

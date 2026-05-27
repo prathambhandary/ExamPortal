@@ -300,6 +300,10 @@ def search_students():
     batch_name = data.get("batch_name")
     stream = data.get("stream")
     target_year = data.get("target_year")
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
+    username = data.get("username")
+    roll_number = data.get("roll_number")
 
     page = int(data.get("page", 1))
     limit = int(data.get("limit", 10))
@@ -310,6 +314,10 @@ def search_students():
         batch_name=batch_name,
         stream=stream,
         target_year=target_year,
+        first_name=first_name,
+        last_name=last_name,
+        username=username,
+        roll_number=roll_number,
         limit=limit,
         offset=offset
     )
