@@ -129,7 +129,6 @@ def create_tables():
     conn.commit()
     conn.close()
 
-
 def login_user(username, password):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
@@ -279,12 +278,26 @@ def register_student(
 
 def all_batches():
     conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute("SELECT batch_name FROM batches")
-    batches = c.fetchall()
-    conn.close()
-    return batches
+    c.execute("SELECT batch_name, course, year FROM batches")
+    
+    rows = c.fetchall()
 
+    batches = []
+    
+    for row in rows:
+        batches.append({
+            "batch_name": row["batch_name"],
+            "course": row["course"],
+            "year": row["year"]
+        })
+
+    print("Fetched batches:", batches)
+
+    conn.close()
+
+    return batches
 if __name__ == "__main__":
     create_tables()
     print("Database and tables created successfully.")

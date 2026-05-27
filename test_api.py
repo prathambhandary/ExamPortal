@@ -1,6 +1,7 @@
 import requests
 
-BASE_URL = "https://sharmaji.pythonanywhere.com"
+# BASE_URL = "https://sharmaji.pythonanywhere.com"
+BASE_URL = "http://127.0.0.1:7000"
 
 
 def test_home():
@@ -51,8 +52,31 @@ def test_delete_user():
     print("Status:", response.status_code)
     print("Response:", response.json())
 
+def test_add_batch():
+    response = requests.post(
+        BASE_URL + "/add_batch",
+        json={
+            "batch_name": "JEE 2025",
+            "course": "PCMC",
+            "year": 2025
+        }
+    )
+
+    print("\nADD BATCH TEST")
+    print("Status:", response.status_code)
+    print("Response:", response.json())
+
+def test_get_batches():
+    response = requests.get(BASE_URL + "/get_batches")
+
+    print("\nGET BATCHES TEST")
+    print("Status:", response.status_code)
+    print("Response:", response.json())
+
 if __name__ == "__main__":
     test_home()
-    test_register()
+    # test_register()
     # test_login()
     # test_delete_user()
+    test_add_batch()
+    test_get_batches()

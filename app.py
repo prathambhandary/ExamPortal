@@ -100,8 +100,8 @@ def add_batch():
     return jsonify({'error': message}), 400
     
 @app.route("/get_batches", methods=['GET'])
-def get_batches():
-    batches = database.get_batches()
+def get_batch_names():
+    batches = database.all_batches()
     return jsonify(batches), 200
 
 # one more route
@@ -134,7 +134,7 @@ def register_student():
         data.get('batch_id'),
         data.get('email'),
         data.get('student_phone'),
-        data.get('parent_phone'),
+        data.get('parent_phone'), 
         data.get('stream'),
         data.get('target_year')
     )
