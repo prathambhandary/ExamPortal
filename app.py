@@ -70,7 +70,8 @@ def login():
                 "parent_phone": profile_data.get("parent_phone"),
                 "stream": profile_data.get("stream"),
                 "target_year": profile_data.get("target_year"),
-                "gender": profile_data.get("gender")
+                "gender": profile_data.get("gender"),
+                "batch_name": database.get_batch_name(profile_data.get("batch_id"))
             }), 200
     
     if is_valid[0]:
@@ -194,13 +195,25 @@ def clear_table_endpoint(table_name):
         "error": message
     }), 500
 
-@app.route("/get_student_profile", methods=['GET']) #security risk
+@app.route("/get_student_profile", methods=['GET']) # security risk
 def get_student_profile():
     return jsonify(database.get_student_profile("ram")), 200
 
-@app.route("/login_table", methods=['GET']) #security risk
+@app.route("/login_table", methods=['GET']) # security risk
 def get_login_table():
     return jsonify(database.get_login_table()), 200
+
+@app.route("/revoke_access", methods=['POST'])
+def revoke_access():
+    data = request.json
+    
+    if data is None:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+    
+    if data.get("current_role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 403
+    
+
 
 if __name__ == "__main__":
     app.run(
