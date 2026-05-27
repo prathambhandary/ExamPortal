@@ -1,4 +1,5 @@
 import sqlite3
+from fastapi import params
 from werkzeug.security import generate_password_hash, check_password_hash
 
 DATABASE = "nextgen.db"
@@ -428,8 +429,21 @@ def all():
         "students": students
     }
 
-def all_students(search="", batch_name=None, stream=None, target_year=None, limit=10, offset=0):
-
+def all_students(
+    search="",
+    batch_name=None,
+    batch_list=None,
+    stream=None,
+    stream_list=None,
+    target_year=None,
+    min_year=None,
+    max_year=None,
+    access=None,
+    sort_by="username",
+    sort_order="asc",
+    limit=10,
+    offset=0
+):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
 
@@ -451,7 +465,7 @@ def all_students(search="", batch_name=None, stream=None, target_year=None, limi
         JOIN login ON login.id = student_profiles.user_id
         LEFT JOIN batches ON batches.id = student_profiles.batch_id
         WHERE 1=1
-    """
+        """
 
     params = []
 
@@ -459,24 +473,61 @@ def all_students(search="", batch_name=None, stream=None, target_year=None, limi
         like = f"%{search}%"
         query += """
             AND (
-                login.username LIKE ?
-                OR student_profiles.first_name LIKE ?
-                OR student_profiles.roll_number LIKE ?
+                LOWER(login.username) LIKE LOWER(?)
+                OR LOWER(student_profiles.first_name) LIKE LOWER(?)
+                OR LOWER(student_profiles.last_name) LIKE LOWER(?)
+                OR LOWER(student_profiles.roll_number) LIKE LOWER(?)
+                OR LOWER(student_profiles.email) LIKE LOWER(?)
+                OR LOWER(student_profiles.student_phone) LIKE LOWER(?)
             )
         """
-        params.extend([like, like, like])
+        params.extend([like]*6)
 
     if batch_name:
-        query += " AND batches.batch_name = ?"
+        query += " AND LOWER(batches.batch_name) = LOWER(?)"
         params.append(batch_name)
 
     if stream:
-        query += " AND student_profiles.stream = ?"
+        query += " AND LOWER(batches.batch_name) = LOWER(?)"
         params.append(stream)
 
     if target_year:
         query += " AND student_profiles.target_year = ?"
         params.append(target_year)
+    
+    if batch_list:
+        placeholders = ",".join(["?"] * len(batch_list))
+        query += f" AND LOWER(batches.batch_name) IN ({','.join(['LOWER(?)'] * len(batch_list))})"
+        params.extend(batch_list)
+
+    if stream_list:
+        placeholders = ",".join(["?"] * len(stream_list))
+        query += f" AND LOWER(student_profiles.stream) IN ({','.join(['LOWER(?)'] * len(stream_list))})"
+        params.extend(stream_list)
+
+    if min_year is not None:
+        query += " AND student_profiles.target_year >= ?"
+        params.append(min_year)
+
+    if max_year is not None:
+        query += " AND student_profiles.target_year <= ?"
+        params.append(max_year)
+
+    if access is not None:
+        query += " AND student_profiles.access = ?"
+        params.append(access)
+
+    allowed_sort = {
+        "username": "login.username",
+        "first_name": "student_profiles.first_name",
+        "roll_number": "student_profiles.roll_number",
+        "target_year": "student_profiles.target_year"
+    }
+
+    sort_column = allowed_sort.get(sort_by, "login.username")
+    sort_direction = "ASC" if sort_order.lower() == "asc" else "DESC"
+
+    query += f" ORDER BY {sort_column} {sort_direction}"
 
     query += " LIMIT ? OFFSET ?"
     params.extend([limit, offset])
