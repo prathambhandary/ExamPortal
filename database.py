@@ -526,37 +526,32 @@ def all_students(
     # -----------------------
     # EXACT FILTERS
     # -----------------------
+    def like(v):
+        return f"%{v.lower()}%"
+    
     if username:
-        query += " AND LOWER(login.username) = LOWER(?)"
-        params.append(username)
+        query += " AND LOWER(login.username) LIKE ?"
+        params.append(like(username))
 
     if first_name:
-        query += " AND LOWER(student_profiles.first_name) = LOWER(?)"
-        params.append(first_name)
+        query += " AND LOWER(student_profiles.first_name) LIKE ?"
+        params.append(like(first_name))
 
     if last_name:
-        query += " AND LOWER(student_profiles.last_name) = LOWER(?)"
-        params.append(last_name)
+        query += " AND LOWER(student_profiles.last_name) LIKE ?"
+        params.append(like(last_name))
 
     if roll_number:
-        query += " AND LOWER(student_profiles.roll_number) = LOWER(?)"
-        params.append(roll_number)
+        query += " AND LOWER(student_profiles.roll_number) LIKE ?"
+        params.append(like(roll_number))
 
     if batch_name:
-        query += " AND LOWER(batches.batch_name) = LOWER(?)"
-        params.append(batch_name)
+        query += " AND LOWER(batches.batch_name) LIKE ?"
+        params.append(like(batch_name))
 
     if stream:
-        query += " AND LOWER(student_profiles.stream) = LOWER(?)"
-        params.append(stream)
-
-    if target_year is not None:
-        query += " AND student_profiles.target_year = ?"
-        params.append(target_year)
-
-    if access is not None:
-        query += " AND student_profiles.access = ?"
-        params.append(access)
+        query += " AND LOWER(student_profiles.stream) LIKE ?"
+        params.append(like(stream))
 
     # -----------------------
     # RANGE FILTERS

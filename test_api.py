@@ -101,7 +101,7 @@ def test_register_student():
 def test_all():
     access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3OTg5NzAzMywianRpIjoiNGI4N2NhYjItNjdmYi00YWNiLThmMmMtYmU2NWIxODZhMTQ4IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImFkbWluIiwibmJmIjoxNzc5ODk3MDMzLCJjc3JmIjoiMjExOTg0Y2MtZjhlZS00ODlmLWJkNTYtMjc1Mjg0ZTU5MzM1IiwiZXhwIjoxNzc5OTAwNjMzLCJyb2xlIjoiYWRtaW4ifQ.Au7A25jXjPTgIDl0tgtVNmxBTxwGrl9srwHVkat8rxg"
     response = requests.post(
-        BASE_URL + "/get_all_student_profile_admin",
+        BASE_URL + "/students/search",
         json={
             "first_name":"dheeraj"
             },
