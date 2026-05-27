@@ -428,6 +428,65 @@ def all():
         "students": students
     }
 
+def all_students(search="", batch_name=None, stream=None, target_year=None, limit=10, offset=0):
+
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    query = """
+        SELECT 
+            login.username,
+            student_profiles.first_name,
+            student_profiles.last_name,
+            student_profiles.roll_number,
+            batches.batch_name,
+            student_profiles.email,
+            student_profiles.student_phone,
+            student_profiles.parent_phone,
+            student_profiles.stream,
+            student_profiles.target_year,
+            student_profiles.access,
+            student_profiles.gender
+        FROM student_profiles
+        JOIN login ON login.id = student_profiles.user_id
+        LEFT JOIN batches ON batches.id = student_profiles.batch_id
+        WHERE 1=1
+    """
+
+    params = []
+
+    if search:
+        like = f"%{search}%"
+        query += """
+            AND (
+                login.username LIKE ?
+                OR student_profiles.first_name LIKE ?
+                OR student_profiles.roll_number LIKE ?
+            )
+        """
+        params.extend([like, like, like])
+
+    if batch_name:
+        query += " AND batches.batch_name = ?"
+        params.append(batch_name)
+
+    if stream:
+        query += " AND student_profiles.stream = ?"
+        params.append(stream)
+
+    if target_year:
+        query += " AND student_profiles.target_year = ?"
+        params.append(target_year)
+
+    query += " LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
+
+    c.execute(query, params)
+    rows = c.fetchall()
+    conn.close()
+
+    return rows
+
 if __name__ == "__main__":
     create_tables()
     print("Database and tables created successfully.")

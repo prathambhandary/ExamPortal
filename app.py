@@ -256,6 +256,60 @@ def get_all_student_profiles():
     profiles = database.all()
     return jsonify(profiles), 200
 
+@app.route("/students/search", methods=["POST"])
+def search_students():
+
+    data = request.get_json(silent=True) or {}
+
+    if data is None:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+
+    if data.get("current_role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 403
+
+    search = data.get("search", "")
+    batch_name = data.get("batch_name")
+    stream = data.get("stream")
+    target_year = data.get("target_year")
+
+    page = int(data.get("page", 1))
+    limit = int(data.get("limit", 10))
+    offset = (page - 1) * limit
+
+    rows = database.search_students_db(
+        search=search,
+        batch_name=batch_name,
+        stream=stream,
+        target_year=target_year,
+        limit=limit,
+        offset=offset
+    )
+
+    payload = [
+        {
+            "username": r[0],
+            "first_name": r[1],
+            "last_name": r[2],
+            "roll_number": r[3],
+            "batch_name": r[4],
+            "email": r[5],
+            "student_phone": r[6],
+            "parent_phone": r[7],
+            "stream": r[8],
+            "target_year": r[9],
+            "access": r[10],
+            "gender": r[11]
+        }
+        for r in rows
+    ]
+
+    return jsonify({
+        "page": page,
+        "limit": limit,
+        "count": len(payload),
+        "data": payload
+    }), 200
+
 if __name__ == "__main__":
     app.run(
         debug=True,
