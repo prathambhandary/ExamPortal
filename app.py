@@ -223,6 +223,27 @@ def revoke_access():
     
     return jsonify({'error': message}), 400
 
+@app.route("/grant_access", methods=['POST'])
+def grant_access():
+    data = request.json
+    
+    if data is None:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+    
+    if data.get("current_role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 403
+    
+    username = data.get('username')  
+    if not username:
+        return jsonify({'error': 'Username required'}), 400  
+
+    status, message = database.grant_access(username)
+    if status:
+        return jsonify({'message': message}), 200
+    
+    return jsonify({'error': message}), 400
+
+
 if __name__ == "__main__":
     app.run(
         debug=True,
