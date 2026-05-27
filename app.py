@@ -4,6 +4,7 @@ import database
 import subprocess
 import os
 from datetime import timedelta
+from auth import admin_required
 from flask_jwt_extended import (
     JWTManager, create_access_token,
     jwt_required, get_jwt
@@ -16,6 +17,7 @@ jwt = JWTManager(app)
 CORS(app)
 
 database.create_tables()
+database.create_indexes()
 
 @app.route('/api/github-deploy-webhook', methods=['POST'])
 def github_webhook():
@@ -226,15 +228,12 @@ def get_login_table():
 
 @app.route("/revoke_access", methods=['POST'])
 @jwt_required()
+@admin_required
 def revoke_access():
     data = request.json
     
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
-    
-    claims = get_jwt()
-    if claims.get("role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 40
     
     username = data.get('username')  
     if not username:
@@ -248,15 +247,12 @@ def revoke_access():
 
 @app.route("/grant_access", methods=['POST'])
 @jwt_required()
+@admin_required
 def grant_access():
     data = request.json
     
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
-
-    claims = get_jwt()
-    if claims.get("role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 40
     
     username = data.get('username')  
     if not username:
@@ -270,31 +266,25 @@ def grant_access():
 
 @app.route("/get_all_student_profile_admin", methods=['POST'])
 @jwt_required()
+@admin_required
 def get_all_student_profiles():
     data = request.json
 
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
-
-    claims = get_jwt()
-    if claims.get("role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 40
     
     profiles = database.all()
     return jsonify(profiles), 200
 
 @app.route("/students/search", methods=["POST"])
 @jwt_required()
+@admin_required
 def search_students():
 
     data = request.get_json(silent=True) or {}
 
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
-
-    claims = get_jwt()
-    if claims.get("role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 403
 
     search = data.get("search", "")
     batch_name = data.get("batch_name")
