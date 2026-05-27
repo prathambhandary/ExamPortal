@@ -89,7 +89,7 @@ def login():
                 "stream": profile_data.get("stream"),
                 "target_year": profile_data.get("target_year"),
                 "gender": profile_data.get("gender"),
-                "batch_name": database.get_batch_name(profile_data.get("batch_id"))
+                "batch_name": profile_data.get("batch_name")
             }), 200
     
     if is_valid[0]:
