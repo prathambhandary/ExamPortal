@@ -410,6 +410,22 @@ def grant_access(username):
     finally:
         conn.close()
 
+def all():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    c.execute("SELECT batch_name, course, year FROM batches")
+    batches = [dict(row) for row in c.fetchall()]
+
+    c.execute("SELECT login.username, student_profiles.first_name, student_profiles.last_name, student_profiles.roll_number, student_profiles.batch_id, student_profiles.email, student_profiles.student_phone, student_profiles.parent_phone, student_profiles.stream, student_profiles.target_year, student_profiles.access, student_profiles.gender FROM login JOIN student_profiles ON login.id = student_profiles.user_id;")
+    students = [dict(row) for row in c.fetchall()]
+
+    return {
+        "batches": batches,
+        "students": students
+    }
+
 if __name__ == "__main__":
     create_tables()
     print("Database and tables created successfully.")

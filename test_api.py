@@ -9,7 +9,7 @@ def test_home():
 
     print("\nHOME TEST")
     print("Status:", response.status_code)
-    print("Response:", response.text)
+    print("Response:", response.json())
 
 
 def test_register():
@@ -31,14 +31,14 @@ def test_login():
     response = requests.post(
         BASE_URL + "/login",
         json={
-            "username": "Rahul",
+            "username": "rahul",
             "password": "rahul"
         }
     )
 
     print("\nLOGIN TEST")
     print("Status:", response.status_code)
-    print("Response:", response.json())
+    print("Response:", response.text)
 
 def test_delete_user():
     response = requests.post(
@@ -98,6 +98,18 @@ def test_register_student():
     print("Status:", response.status_code)
     print("Response:", response.json())
 
+def test_all():
+    response = requests.post(
+        BASE_URL + "/get_all_student_profile_admin",
+        json={
+            "current_role": "admin"
+        }
+    )
+
+    print("\nALL TEST")
+    print("Status:", response.status_code)
+    print("Response:", response.json())
+
 if __name__ == "__main__":
     test_home()
     # test_register()
@@ -106,3 +118,4 @@ if __name__ == "__main__":
     # test_add_batch()
     # test_get_batches()
     # test_register_student()
+    test_all()
