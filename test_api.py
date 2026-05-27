@@ -112,6 +112,19 @@ def test_all():
     print("Status:", response.status_code)
     print("Response:", response.json())
 
+def test_profiles():
+    access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3OTkwNjQ1OCwianRpIjoiNzE2MTVjMDgtMjdhNS00YjAxLWJjMDMtMGZlMTYxMGM1YTAyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImFkbWluIiwibmJmIjoxNzc5OTA2NDU4LCJjc3JmIjoiMTM3ZmE4MTgtNmQzMC00M2IzLWE2NzctZGYxNGIyNzg3YTI3IiwiZXhwIjoxNzc5OTEwMDU4LCJyb2xlIjoiYWRtaW4ifQ.kj4Bb82l1N2zdUt09ckZcJCO5Wm-RyWM2QGCx0Cr6j8"
+    response = requests.post(
+        BASE_URL + "/get_student_profile",
+        json={
+            "username":"rahul"
+            },
+        headers={"Authorization": f"Bearer {access_token}"}
+    )
+
+    print("\nPROFILE TEST")
+    print("Status:", response.status_code)
+    print("Response:", response.json())
 if __name__ == "__main__":
     test_home()
     # test_register()
@@ -120,4 +133,5 @@ if __name__ == "__main__":
     # test_add_batch()
     # test_get_batches()
     # test_register_student()
-    test_all()
+    # test_all()
+    test_profiles()

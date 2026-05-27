@@ -1,138 +1,208 @@
 import sqlite3
-from fastapi import params
+# from fastapi import params
 from werkzeug.security import generate_password_hash, check_password_hash
 
 DATABASE = "nextgen.db"
 
 
 def create_tables():
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
 
-    # Enable foreign key constraint support in SQLite
     c.execute("PRAGMA foreign_keys = ON;")
 
-    # 1. BATCHES TABLE
     c.execute('''CREATE TABLE IF NOT EXISTS batches (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              batch_name TEXT NOT NULL UNIQUE,
-              course TEXT NOT NULL,
-              year INTEGER NOT NULL
-        )''')
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        batch_name TEXT NOT NULL UNIQUE,
+        course TEXT NOT NULL,
+        year INTEGER NOT NULL
+    )''')
 
-    # 2. CORE USERS TABLE (Authentication)
     c.execute('''CREATE TABLE IF NOT EXISTS login (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              username TEXT NOT NULL UNIQUE,
-              password TEXT NOT NULL,
-              role TEXT NOT NULL DEFAULT 'student'
-        )''')
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'student',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
 
-    # 3. STUDENT PROFILES TABLE (Extended Meta Data)
     c.execute('''CREATE TABLE IF NOT EXISTS student_profiles (
-              user_id INTEGER PRIMARY KEY,
-              first_name TEXT NOT NULL,
-              last_name TEXT,
-              roll_number TEXT NOT NULL UNIQUE,
-              batch_id INTEGER,
-              email TEXT UNIQUE,
-              student_phone TEXT,
-              parent_phone TEXT,
-              stream TEXT NOT NULL,
-              target_year INTEGER,
-              access INTEGER DEFAULT 1,
-              gender TEXT,
-              FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
-              FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE SET NULL
-        )''')
+        user_id INTEGER PRIMARY KEY,
+        first_name TEXT NOT NULL,
+        last_name TEXT,
+        roll_number TEXT NOT NULL UNIQUE,
+        batch_id INTEGER,
+        email TEXT UNIQUE,
+        student_phone TEXT,
+        parent_phone TEXT,
+        stream TEXT NOT NULL,
+        target_year INTEGER,
+        access INTEGER DEFAULT 1,
+        gender TEXT,
+        FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
+        FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE SET NULL
+    )''')
 
-    # 4. EXAMS TABLE (Test Configuration)
+    c.execute('''CREATE TABLE IF NOT EXISTS staff_profiles (
+        user_id INTEGER PRIMARY KEY,
+        first_name TEXT NOT NULL,
+        last_name TEXT,
+        email TEXT UNIQUE,
+        phone TEXT,
+        department TEXT,
+        designation TEXT,
+        is_active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS roles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        role_name TEXT UNIQUE NOT NULL
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS permissions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        permission_name TEXT UNIQUE NOT NULL
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS role_permissions (
+        role_id INTEGER,
+        permission_id INTEGER,
+        PRIMARY KEY(role_id, permission_id),
+        FOREIGN KEY(role_id) REFERENCES roles(id) ON DELETE CASCADE,
+        FOREIGN KEY(permission_id) REFERENCES permissions(id) ON DELETE CASCADE
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS user_roles (
+        user_id INTEGER,
+        role_id INTEGER,
+        PRIMARY KEY(user_id, role_id),
+        FOREIGN KEY(user_id) REFERENCES login(id) ON DELETE CASCADE,
+        FOREIGN KEY(role_id) REFERENCES roles(id) ON DELETE CASCADE
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS access_control (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        can_create_exam INTEGER DEFAULT 1,
+        can_edit_exam INTEGER DEFAULT 1,
+        can_delete_exam INTEGER DEFAULT 1,
+        can_publish_exam INTEGER DEFAULT 1,
+        can_manage_students INTEGER DEFAULT 1,
+        can_manage_staff INTEGER DEFAULT 1,
+        can_view_results INTEGER DEFAULT 1,
+        FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS audit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        action TEXT,
+        target TEXT,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE SET NULL
+    )''')
+
     c.execute('''CREATE TABLE IF NOT EXISTS exams (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              test_name TEXT NOT NULL UNIQUE,
-              category TEXT NOT NULL,
-              duration_minutes INTEGER NOT NULL,
-              total_marks INTEGER NOT NULL,
-              start_time TIMESTAMP NOT NULL,
-              end_time TIMESTAMP NOT NULL,
-              is_active INTEGER DEFAULT 0,
-              shuffle_questions INTEGER DEFAULT 0
-        )''')
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        test_name TEXT NOT NULL UNIQUE,
+        category TEXT NOT NULL,
+        duration_minutes INTEGER NOT NULL,
+        total_marks INTEGER NOT NULL,
+        start_time TIMESTAMP NOT NULL,
+        end_time TIMESTAMP NOT NULL,
+        is_active INTEGER DEFAULT 0,
+        shuffle_questions INTEGER DEFAULT 0
+    )''')
 
-    # 5. QUESTIONS TABLE (Master Question Bank)
     c.execute('''CREATE TABLE IF NOT EXISTS questions (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              subject TEXT NOT NULL,
-              chapter TEXT NOT NULL,
-              question_type TEXT NOT NULL, 
-              difficulty TEXT DEFAULT 'Medium',
-              question_text TEXT NOT NULL, 
-              option_a TEXT,
-              option_b TEXT,
-              option_c TEXT,
-              option_d TEXT,
-              correct_answer TEXT NOT NULL,
-              positive_marks INTEGER DEFAULT 4,
-              negative_marks INTEGER DEFAULT 1,
-              explanation TEXT
-        )''')
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        subject TEXT NOT NULL,
+        chapter TEXT NOT NULL,
+        question_type TEXT NOT NULL,
+        difficulty TEXT DEFAULT 'Medium',
+        question_text TEXT NOT NULL,
+        option_a TEXT,
+        option_b TEXT,
+        option_c TEXT,
+        option_d TEXT,
+        correct_answer TEXT NOT NULL,
+        positive_marks INTEGER DEFAULT 4,
+        negative_marks INTEGER DEFAULT 1,
+        explanation TEXT,
+        created_by INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(created_by) REFERENCES login(id) ON DELETE SET NULL
+    )''')
 
-    # 6. EXAM BATCHES BRIDGE TABLE (Targeting Control)
     c.execute('''CREATE TABLE IF NOT EXISTS exam_batches (
-              exam_id INTEGER,
-              batch_id INTEGER,
-              PRIMARY KEY (exam_id, batch_id),
-              FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
-              FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE
-        )''')
+        exam_id INTEGER,
+        batch_id INTEGER,
+        PRIMARY KEY (exam_id, batch_id),
+        FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
+        FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE
+    )''')
 
-    # 7. EXAM QUESTIONS BRIDGE TABLE (The Playlist Compiler)
     c.execute('''CREATE TABLE IF NOT EXISTS exam_questions (
-              exam_id INTEGER,
-              question_id INTEGER,
-              section_name TEXT NOT NULL,
-              sequence_number INTEGER NOT NULL,
-              PRIMARY KEY (exam_id, question_id),
-              FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
-              FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-        )''')
+        exam_id INTEGER,
+        question_id INTEGER,
+        section_name TEXT NOT NULL,
+        sequence_number INTEGER NOT NULL,
+        PRIMARY KEY (exam_id, question_id),
+        FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
+        FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+    )''')
 
-    # 8. STUDENT RESPONSES TABLE (Real-Time Live State Tracking)
     c.execute('''CREATE TABLE IF NOT EXISTS student_responses (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              exam_id INTEGER NOT NULL,
-              question_id INTEGER NOT NULL,
-              selected_answer TEXT,
-              status TEXT DEFAULT 'Not Visited',
-              timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              UNIQUE(user_id, exam_id, question_id),
-              FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
-              FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
-              FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-        )''')
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        exam_id INTEGER NOT NULL,
+        question_id INTEGER NOT NULL,
+        selected_answer TEXT,
+        status TEXT DEFAULT 'Not Visited',
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, exam_id, question_id),
+        FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
+        FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
+        FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+    )''')
 
-    # 9. EXAM ATTEMPTS TABLE (Master Ledger & Ledger Processing)
     c.execute('''CREATE TABLE IF NOT EXISTS exam_attempts (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INTEGER NOT NULL,
-              exam_id INTEGER NOT NULL,
-              start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              submit_time TIMESTAMP,
-              total_score INTEGER DEFAULT 0,
-              correct_count INTEGER DEFAULT 0,
-              incorrect_count INTEGER DEFAULT 0,
-              status TEXT DEFAULT 'Ongoing',
-              UNIQUE(user_id, exam_id),
-              FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
-              FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
-        )''')
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        exam_id INTEGER NOT NULL,
+        start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        submit_time TIMESTAMP,
+        total_score INTEGER DEFAULT 0,
+        correct_count INTEGER DEFAULT 0,
+        incorrect_count INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'Ongoing',
+        UNIQUE(user_id, exam_id),
+        FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
+        FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS login_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        ip_address TEXT,
+        user_agent TEXT,
+        login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        success INTEGER DEFAULT 0,
+        FOREIGN KEY(user_id) REFERENCES login(id) ON DELETE CASCADE
+    )''')
 
     conn.commit()
     conn.close()
 
+def get_connection():
+    conn = sqlite3.connect('exam_portal.db')
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
 def create_indexes():
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
 
     c.executescript("""
@@ -159,16 +229,29 @@ def create_indexes():
 
         CREATE INDEX IF NOT EXISTS idx_batches_name
         ON batches(batch_name);
+                    
+        CREATE INDEX IF NOT EXISTS idx_student_email
+        ON student_profiles(email);
+
+        CREATE INDEX IF NOT EXISTS idx_student_batch_id
+        ON student_profiles(batch_id);
+
+        CREATE INDEX IF NOT EXISTS idx_login_role
+        ON login(role);
+
+        CREATE INDEX IF NOT EXISTS idx_exam_attempts_user_exam
+        ON exam_attempts(user_id, exam_id);
+
+        CREATE INDEX IF NOT EXISTS idx_student_responses_user_exam
+        ON student_responses(user_id, exam_id);
     """)
 
     conn.commit()
     conn.close()
 
 def get_student_profile(username):
-
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
-
     c = conn.cursor()
 
     c.execute("""
@@ -184,45 +267,54 @@ def get_student_profile(username):
             student_profiles.target_year,
             student_profiles.gender,
             student_profiles.access,
-            student_profiles.batch_id      
+            batches.batch_name
         FROM login
         JOIN student_profiles
         ON login.id = student_profiles.user_id
+        LEFT JOIN batches
+        ON batches.id = student_profiles.batch_id
         WHERE login.username = ?
     """, (username,))
 
     row = c.fetchone()
-
     conn.close()
 
-    if row:
-        return dict(row)
+    data = dict(row) if row else None
+    if data:
+        data['batch_name'] = get_batch_name(data.pop('batch_id'))
 
-    return None
+    return data
 
 def login_user(username, password):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
+    conn = get_connection()
+    c = conn.cursor()
 
-    cursor.execute(
-        "SELECT password, role FROM login WHERE username = ?",
-        (username,)
-    )
+    c.execute("""
+        SELECT password, role
+        FROM login
+        WHERE username = ?
+    """, (username,))
 
-    result = cursor.fetchone()
-    data = get_student_profile(username)
+    result = c.fetchone()
+
+    if not result:
+        conn.close()
+        return [False, None]
+
+    stored_password, role = result
+    is_valid = check_password_hash(stored_password, password)
+
+    data = None
+
+    if role == "student":
+        data = get_student_profile(username)
 
     conn.close()
 
-    if not result:
-        return [False, None]
-
-    is_valid = check_password_hash(result[0], password)
-
-    return [is_valid, result[1], data]
+    return [is_valid, role, data]
 
 def add_user(username, password, role):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     cursor = conn.cursor()
 
     hashed_password = generate_password_hash(password)
@@ -247,14 +339,14 @@ def add_user(username, password, role):
         conn.close()
 
 def delete_user(username):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
     c.execute("DELETE FROM login WHERE username = ?", (username,))
     conn.commit()
     conn.close()
 
 def add_batch(batch_name, course, year):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
 
     try:
@@ -269,7 +361,7 @@ def add_batch(batch_name, course, year):
         conn.close()
 
 def all_batches():
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT batch_name, course, year FROM batches")
@@ -285,14 +377,12 @@ def all_batches():
             "year": row["year"]
         })
 
-    print("Fetched batches:", batches)
-
     conn.close()
 
     return batches
 
 def all_streams():
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT DISTINCT stream FROM student_profiles WHERE stream IS NOT NULL")
@@ -306,14 +396,12 @@ def all_streams():
             "stream": row["stream"]
         })
 
-    print("Fetched streams:", streams)
-
     conn.close()
 
     return streams
 
 def get_batch_id(batch_name):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
     c.execute("SELECT id FROM batches WHERE batch_name = ?", (batch_name,))
     result = c.fetchone()
@@ -321,7 +409,7 @@ def get_batch_id(batch_name):
     return result[0] if result else None
 
 def get_batch_name(batch_id):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
     c.execute("SELECT batch_name FROM batches WHERE id = ?", (batch_id,))
     result = c.fetchone()
@@ -342,7 +430,7 @@ def add_student(
     target_year,
     gender
 ):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
 
     try:
         c = conn.cursor()
@@ -407,7 +495,7 @@ def add_student(
         conn.close()
 
 def ensure_gender_column():
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
 
     c.execute("PRAGMA table_info(student_profiles)")
@@ -419,7 +507,7 @@ def ensure_gender_column():
     conn.close()
 
 def clear_table(table_name):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     try:
         c = conn.cursor()
         c.execute(f"DELETE FROM {table_name}")
@@ -431,52 +519,115 @@ def clear_table(table_name):
         conn.close()
 
 def get_login_table():
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
-
     c = conn.cursor()
 
-    c.execute("select * from login")
-    return [dict(row) for row in c.fetchall()]
+    c.execute("""
+        SELECT id, username, role
+        FROM login
+    """)
+
+    rows = [dict(row) for row in c.fetchall()]
+
+    conn.close()
+
+    return rows
 
 def revoke_access(username):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
+
     try:
-        c.execute("UPDATE student_profiles SET access = 0 WHERE user_id = (SELECT id FROM login WHERE username = ?)", (username,))
+        c.execute("""
+            UPDATE student_profiles
+            SET access = 0
+            WHERE user_id = (
+                SELECT id
+                FROM login
+                WHERE username = ?
+            )
+        """, (username,))
+
         conn.commit()
+
+        if c.rowcount == 0:
+            return False, "User not found"
+
         return True, "Access revoked successfully"
+
     except Exception as e:
         conn.rollback()
         return False, str(e)
+
     finally:
         conn.close()
 
 def grant_access(username):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
+
     try:
-        c.execute("UPDATE student_profiles SET access = 1 WHERE user_id = (SELECT id FROM login WHERE username = ?)", (username,))
+        c.execute("""
+            UPDATE student_profiles
+            SET access = 1
+            WHERE user_id = (
+                SELECT id
+                FROM login
+                WHERE username = ?
+            )
+        """, (username,))
+
         conn.commit()
+
+        if c.rowcount == 0:
+            return False, "User not found"
+
         return True, "Access granted successfully"
+
     except Exception as e:
         conn.rollback()
         return False, str(e)
+
     finally:
         conn.close()
 
 def all():
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    c.execute("SELECT batch_name, course, year FROM batches")
+    c.execute("""
+        SELECT batch_name, course, year
+        FROM batches
+    """)
+
     batches = [dict(row) for row in c.fetchall()]
 
-    c.execute("SELECT login.username, student_profiles.first_name, student_profiles.last_name, student_profiles.roll_number, student_profiles.batch_id, student_profiles.email, student_profiles.student_phone, student_profiles.parent_phone, student_profiles.stream, student_profiles.target_year, student_profiles.access, student_profiles.gender FROM login JOIN student_profiles ON login.id = student_profiles.user_id;")
+    c.execute("""
+        SELECT
+            login.username,
+            student_profiles.first_name,
+            student_profiles.last_name,
+            student_profiles.roll_number,
+            batches.batch_name,
+            student_profiles.email,
+            student_profiles.student_phone,
+            student_profiles.parent_phone,
+            student_profiles.stream,
+            student_profiles.target_year,
+            student_profiles.access,
+            student_profiles.gender
+        FROM login
+        JOIN student_profiles
+        ON login.id = student_profiles.user_id
+        LEFT JOIN batches
+        ON batches.id = student_profiles.batch_id
+    """)
+
     students = [dict(row) for row in c.fetchall()]
-    for student in students:
-        student["batch_name"] = get_batch_name(student.pop("batch_id"))
+
+    conn.close()
 
     return {
         "batches": batches,
@@ -502,7 +653,7 @@ def all_students(
     limit=10,
     offset=0
 ):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_connection()
     c = conn.cursor()
 
     query = """
@@ -597,6 +748,14 @@ def all_students(
         placeholders = ",".join(["?"] * len(stream_list))
         query += f" AND LOWER(student_profiles.stream) IN ({placeholders})"
         params.extend([s.lower() for s in stream_list])
+    
+    if target_year is not None:
+        query += " AND student_profiles.target_year = ?"
+        params.append(target_year)
+
+    if access is not None:
+        query += " AND student_profiles.access = ?"
+        params.append(access)
 
     # -----------------------
     # SORTING (SAFE)
