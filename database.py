@@ -397,6 +397,19 @@ def revoke_access(username):
     finally:
         conn.close()
 
+def grant_access(username):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    try:
+        c.execute("UPDATE student_profiles SET access = 1 WHERE user_id = (SELECT id FROM login WHERE username = ?)", (username,))
+        conn.commit()
+        return True, "Access granted successfully"
+    except Exception as e:
+        conn.rollback()
+        return False, str(e)
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
     create_tables()
     print("Database and tables created successfully.")
