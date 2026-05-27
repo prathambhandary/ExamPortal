@@ -57,7 +57,7 @@ def login():
     if profile_data.get("access") == 0:
         return jsonify(("error", "Access denied")), 403
 
-    if is_valid[0]:
+    if is_valid[0] and is_valid[1] == "student":
         return jsonify({
                 "message": "Login successful", 
                 "role": is_valid[1],
@@ -72,6 +72,12 @@ def login():
                 "target_year": profile_data.get("target_year"),
                 "gender": profile_data.get("gender")
             }), 200
+    
+    if is_valid[0]:
+        return jsonify({
+                "message": "Login successful", 
+                "role": is_valid[1]
+            })
 
     return jsonify({"error": "Invalid username or password"}), 401
 
