@@ -98,14 +98,6 @@ def add_batch():
     if status:
         return jsonify({"message": message}), 201
     return jsonify({'error': message}), 400
-    
-
-
-# Temporary
-
-
-
-
 
 if __name__ == "__main__":
     app.run(
