@@ -280,7 +280,7 @@ def get_student_profile(username):
 
     data = dict(row) if row else None
     if data:
-        data['batch_name'] = get_batch_name(data.pop('bat'))
+        data['batch_name'] = get_batch_name(data.pop('batch_id'))
 
     return data
 
