@@ -469,58 +469,30 @@ def all_students(
         JOIN login ON login.id = student_profiles.user_id
         LEFT JOIN batches ON batches.id = student_profiles.batch_id
         WHERE 1=1
-        """
+    """
 
     params = []
 
+    # -----------------------
+    # SEARCH (case-insensitive partial match)
+    # -----------------------
     if search:
         like = f"%{search.lower()}%"
         query += """
             AND (
-                login.username LIKE ?
-                OR student_profiles.first_name LIKE ?
-                OR student_profiles.last_name LIKE ?
-                OR student_profiles.roll_number LIKE ?
-                OR student_profiles.email LIKE ?
-                OR student_profiles.student_phone LIKE ?
+                LOWER(login.username) LIKE ?
+                OR LOWER(student_profiles.first_name) LIKE ?
+                OR LOWER(student_profiles.last_name) LIKE ?
+                OR LOWER(student_profiles.roll_number) LIKE ?
+                OR LOWER(student_profiles.email) LIKE ?
+                OR LOWER(student_profiles.student_phone) LIKE ?
             )
         """
-        params.extend([like]*6)
+        params.extend([like] * 6)
 
-    if batch_name:
-        query += " AND LOWER(batches.batch_name) = LOWER(?)"
-        params.append(batch_name)
-
-    if stream:
-        query += " AND LOWER(student_profiles.stream) = LOWER(?)"
-        params.append(stream)
-
-    if target_year:
-        query += " AND student_profiles.target_year = ?"
-        params.append(target_year)
-    
-    if batch_list:
-        placeholders = ",".join(["?"] * len(batch_list))
-        query += f" AND LOWER(batches.batch_name) IN ({placeholders})"
-        params.extend([b.lower() for b in batch_list])
-
-    if stream_list:
-        placeholders = ",".join(["?"] * len(stream_list))
-        query += f" AND LOWER(student_profiles.stream) IN ({placeholders})"
-        params.extend([s.lower() for s in stream_list])
-
-    if min_year is not None:
-        query += " AND student_profiles.target_year >= ?"
-        params.append(min_year)
-
-    if max_year is not None:
-        query += " AND student_profiles.target_year <= ?"
-        params.append(max_year)
-
-    if access is not None:
-        query += " AND student_profiles.access = ?"
-        params.append(access)
-
+    # -----------------------
+    # EXACT FILTERS
+    # -----------------------
     if username:
         query += " AND LOWER(login.username) = LOWER(?)"
         params.append(username)
@@ -537,18 +509,72 @@ def all_students(
         query += " AND LOWER(student_profiles.roll_number) = LOWER(?)"
         params.append(roll_number)
 
+    if batch_name:
+        query += " AND LOWER(batches.batch_name) = LOWER(?)"
+        params.append(batch_name)
+
+    if stream:
+        query += " AND LOWER(student_profiles.stream) = LOWER(?)"
+        params.append(stream)
+
+    if target_year is not None:
+        query += " AND student_profiles.target_year = ?"
+        params.append(target_year)
+
+    if access is not None:
+        query += " AND student_profiles.access = ?"
+        params.append(access)
+
+    # -----------------------
+    # RANGE FILTERS
+    # -----------------------
+    if min_year is not None:
+        query += " AND student_profiles.target_year >= ?"
+        params.append(min_year)
+
+    if max_year is not None:
+        query += " AND student_profiles.target_year <= ?"
+        params.append(max_year)
+
+    # -----------------------
+    # LIST FILTERS
+    # -----------------------
+    if batch_list:
+        placeholders = ",".join(["?"] * len(batch_list))
+        query += f" AND LOWER(batches.batch_name) IN ({placeholders})"
+        params.extend([b.lower() for b in batch_list])
+
+    if stream_list:
+        placeholders = ",".join(["?"] * len(stream_list))
+        query += f" AND LOWER(student_profiles.stream) IN ({placeholders})"
+        params.extend([s.lower() for s in stream_list])
+
+    # -----------------------
+    # SORTING (SAFE)
+    # -----------------------
     allowed_sort = {
         "username": "login.username",
         "first_name": "student_profiles.first_name",
+        "last_name": "student_profiles.last_name",
         "roll_number": "student_profiles.roll_number",
-        "target_year": "student_profiles.target_year"
+        "batch_name": "batches.batch_name",
+        "stream": "student_profiles.stream",
+        "target_year": "student_profiles.target_year",
+        "access": "student_profiles.access",
+        "email": "student_profiles.email"
     }
 
     sort_column = allowed_sort.get(sort_by, "login.username")
     sort_direction = "ASC" if sort_order.lower() == "asc" else "DESC"
 
-    query += f" ORDER BY {sort_column} {sort_direction}"
+    query += f"""
+        ORDER BY {sort_column} {sort_direction},
+        student_profiles.id DESC
+    """
 
+    # -----------------------
+    # PAGINATION
+    # -----------------------
     query += " LIMIT ? OFFSET ?"
     params.extend([limit, offset])
 
@@ -557,6 +583,7 @@ def all_students(
     conn.close()
 
     return rows
+
 
 if __name__ == "__main__":
     create_tables()
