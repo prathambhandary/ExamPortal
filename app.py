@@ -3,8 +3,14 @@ from flask_cors import CORS
 import database
 import subprocess
 import os
+from flask_jwt_extended import (
+    JWTManager, create_access_token,
+    jwt_required, get_jwt
+)
 
 app = Flask(__name__)
+app.config["JWT_SECRET_KEY"] = "super-secret-change-this"
+jwt = JWTManager(app)
 CORS(app)
 
 database.create_tables()
@@ -53,6 +59,14 @@ def login():
 
     is_valid = database.login_user(username, password)
     profile_data = is_valid[2] if len(is_valid) > 2 else None
+
+    if is_valid[0] and is_valid[1] == "admin":
+        token = create_access_token(identity=username, additional_claims={"role": is_valid[1]})
+        return jsonify({
+            "message": "Login successful",
+            "access_token": token,
+            "role": is_valid[1]
+        })
 
     if is_valid[0] and is_valid[1] == "student":
         if profile_data.get("access") == 0:
@@ -126,14 +140,15 @@ def get_batch_names():
     return jsonify(batches), 200
 
 @app.route("/register_student", methods=['POST'])
+@jwt_required()
 def add_student_endpoint():
-
     data = request.json
 
     if data is None:
         return jsonify({"error": "Invaild JSON data"}), 400
     
-    if data.get("current_role") != "admin":
+    claims = get_jwt()
+    if claims.get("role") != "admin":
         return jsonify({"error": "Unauthorized Access"}), 403
 
     required_fields = [
@@ -208,14 +223,16 @@ def get_login_table():
     return jsonify(database.get_login_table()), 200
 
 @app.route("/revoke_access", methods=['POST'])
+@jwt_required()
 def revoke_access():
     data = request.json
     
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
     
-    if data.get("current_role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 403
+    claims = get_jwt()
+    if claims.get("role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 40
     
     username = data.get('username')  
     if not username:
@@ -228,14 +245,16 @@ def revoke_access():
     return jsonify({'error': message}), 400
 
 @app.route("/grant_access", methods=['POST'])
+@jwt_required()
 def grant_access():
     data = request.json
     
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
 
-    if data.get("current_role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 403
+    claims = get_jwt()
+    if claims.get("role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 40
     
     username = data.get('username')  
     if not username:
@@ -248,19 +267,22 @@ def grant_access():
     return jsonify({'error': message}), 400
 
 @app.route("/get_all_student_profile_admin", methods=['POST'])
+@jwt_required()
 def get_all_student_profiles():
     data = request.json
 
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
 
-    if data.get("current_role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 403
+    claims = get_jwt()
+    if claims.get("role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 40
     
     profiles = database.all()
     return jsonify(profiles), 200
 
 @app.route("/students/search", methods=["POST"])
+@jwt_required()
 def search_students():
 
     data = request.get_json(silent=True) or {}
@@ -268,8 +290,9 @@ def search_students():
     if data is None:
         return jsonify({'error': 'Invalid JSON data'}), 400
 
-    if data.get("current_role") != "admin":
-        return jsonify({"error": "Unauthorized Access"}), 403
+    claims = get_jwt()
+    if claims.get("role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 40
 
     search = data.get("search", "")
     batch_name = data.get("batch_name")
