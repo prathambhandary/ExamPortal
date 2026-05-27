@@ -130,6 +130,20 @@ def create_tables():
     conn.commit()
     conn.close()
 
+def get_student_profile(username):
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('''SELECT sp.*, b.batch_name FROM student_profiles sp
+              JOIN login l ON sp.user_id = l.id
+              LEFT JOIN batches b ON sp.batch_id = b.id
+              WHERE l.username = ?
+        ''', (username,))
+
+    result = c.fetchone()
+    conn.close()
+    return result
+
 def login_user(username, password):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
@@ -268,9 +282,10 @@ def add_student(
                 student_phone,
                 parent_phone,
                 stream,
-                target_year
+                target_year,
+                gender
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             user_id,
             first_name,
@@ -281,7 +296,8 @@ def add_student(
             student_phone,
             parent_phone,
             stream,
-            target_year
+            target_year,
+            gender
         ))
 
         conn.commit()
