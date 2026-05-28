@@ -18,6 +18,7 @@ CORS(app)
 
 database.create_tables()
 database.create_indexes()
+database.ensure_login_logs_columns(database.get_connection())
 
 @app.route('/api/github-deploy-webhook', methods=['POST'])
 def github_webhook():

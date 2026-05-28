@@ -168,29 +168,90 @@ def create_tables():
     )''')
 
     c.execute('''CREATE TABLE IF NOT EXISTS exam_attempts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        exam_id INTEGER NOT NULL,
-        start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        submit_time TIMESTAMP,
-        total_score INTEGER DEFAULT 0,
-        correct_count INTEGER DEFAULT 0,
-        incorrect_count INTEGER DEFAULT 0,
-        status TEXT DEFAULT 'Ongoing',
-        UNIQUE(user_id, exam_id),
-        FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
-        FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
-    )''')
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                exam_id INTEGER NOT NULL,
+                start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                submit_time TIMESTAMP,
+                total_score INTEGER DEFAULT 0,
+                correct_count INTEGER DEFAULT 0,
+                incorrect_count INTEGER DEFAULT 0,
+                status TEXT DEFAULT 'Ongoing',
+                UNIQUE(user_id, exam_id),
+                FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
+                FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
+            )''')
 
-    c.execute('''CREATE TABLE IF NOT EXISTS login_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        ip_address TEXT,
-        user_agent TEXT,
-        login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        success INTEGER DEFAULT 0,
-        FOREIGN KEY(user_id) REFERENCES login(id) ON DELETE CASCADE
-    )''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS login_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            user_id INTEGER NOT NULL,
+
+            # Login status
+            success INTEGER DEFAULT 0,
+            failure_reason TEXT,
+
+            # Network info
+            ip_address TEXT,
+            forwarded_for TEXT,
+            host TEXT,
+            origin TEXT,
+            referer TEXT,
+
+            # Browser / client
+            user_agent TEXT,
+            accept_language TEXT,
+            sec_ch_ua TEXT,
+            sec_ch_platform TEXT,
+            sec_ch_mobile TEXT,
+
+            # Request metadata
+            method TEXT,
+            path TEXT,
+
+            # Device fingerprint
+            screen_resolution TEXT,
+            viewport TEXT,
+            timezone TEXT,
+            timezone_offset INTEGER,
+
+            language TEXT,
+            languages TEXT,
+
+            platform TEXT,
+
+            cpu_cores INTEGER,
+            device_memory TEXT,
+
+            touch_points INTEGER,
+
+            cookies_enabled INTEGER,
+            online_status INTEGER,
+
+            connection_type TEXT,
+
+            device_pixel_ratio REAL,
+
+            local_storage INTEGER,
+            session_storage INTEGER,
+
+            do_not_track TEXT,
+
+            # Security/session
+            login_id TEXT,
+            request_id TEXT,
+            session_id TEXT,
+            device_id TEXT,
+
+            # Timing
+            login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY(user_id)
+                REFERENCES login(id)
+                ON DELETE CASCADE
+        )
+        ''')
 
     conn.commit()
     conn.close()
@@ -660,7 +721,7 @@ def all_students(
     sort_order="asc",
     limit=10,
     offset=0
-):
+    ):
     conn = get_connection()
     c = conn.cursor()
 
@@ -856,6 +917,77 @@ def get_login_logs(limit=100,offset=0):
     conn.close()
 
     return rows
+
+def ensure_login_logs_columns(conn):
+    c = conn.cursor()
+
+    # Existing columns
+    c.execute("PRAGMA table_info(login_logs)")
+    existing_columns = [column[1] for column in c.fetchall()]
+
+    required_columns = {
+        "failure_reason": "TEXT",
+
+        "forwarded_for": "TEXT",
+        "host": "TEXT",
+        "origin": "TEXT",
+        "referer": "TEXT",
+
+        "accept_language": "TEXT",
+        "sec_ch_ua": "TEXT",
+        "sec_ch_platform": "TEXT",
+        "sec_ch_mobile": "TEXT",
+
+        "method": "TEXT",
+        "path": "TEXT",
+
+        "screen_resolution": "TEXT",
+        "viewport": "TEXT",
+        "timezone": "TEXT",
+        "timezone_offset": "INTEGER",
+
+        "language": "TEXT",
+        "languages": "TEXT",
+
+        "platform": "TEXT",
+
+        "cpu_cores": "INTEGER",
+        "device_memory": "TEXT",
+
+        "touch_points": "INTEGER",
+
+        "cookies_enabled": "INTEGER",
+        "online_status": "INTEGER",
+
+        "connection_type": "TEXT",
+
+        "device_pixel_ratio": "REAL",
+
+        "local_storage": "INTEGER",
+        "session_storage": "INTEGER",
+
+        "do_not_track": "TEXT",
+
+        "login_id": "TEXT",
+        "request_id": "TEXT",
+        "session_id": "TEXT",
+        "device_id": "TEXT"
+    }
+
+    for column_name, column_type in required_columns.items():
+
+        if column_name not in existing_columns:
+
+            query = f'''
+            ALTER TABLE login_logs
+            ADD COLUMN {column_name} {column_type}
+            '''
+
+            c.execute(query)
+
+            print(f"[+] Added column: {column_name}")
+
+    conn.commit()
 
 if __name__ == "__main__":
     create_tables()
