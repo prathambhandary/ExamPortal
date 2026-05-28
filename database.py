@@ -861,21 +861,78 @@ def all_students(
 
     return rows
 
-def add_login_log(user_id, success, ip_address=None, user_agent=None):
-    conn=sqlite3.connect(DATABASE)
-    c=conn.cursor()
+def add_login_log(
+    user_id, success,
+    ip_address=None, forwarded_for=None, host=None, origin=None, referer=None,
+    user_agent=None, accept_language=None, sec_ch_ua=None, sec_ch_platform=None, sec_ch_mobile=None,
+    method=None, path=None,
+    screen_resolution=None, viewport=None, timezone=None, timezone_offset=None,
+    language=None, languages=None, platform=None,
+    cpu_cores=None, device_memory=None, touch_points=None,
+    cookies_enabled=None, online_status=None,
+    connection_type=None, device_pixel_ratio=None,
+    local_storage=None, session_storage=None,
+    do_not_track=None,
+    login_id=None, request_id=None, session_id=None, device_id=None,
+    failure_reason=None
+):
+
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
 
     try:
         c.execute("""
-            INSERT INTO login_logs(user_id,ip_address,user_agent,success)
-            VALUES(?,?,?,?)
-        """,(user_id,ip_address,user_agent,int(success)))
+            INSERT INTO login_logs(
+                user_id, success, failure_reason,
+                ip_address, forwarded_for, host, origin, referer,
+                user_agent, accept_language, sec_ch_ua, sec_ch_platform, sec_ch_mobile,
+                method, path,
+                screen_resolution, viewport, timezone, timezone_offset,
+                language, languages, platform,
+                cpu_cores, device_memory, touch_points,
+                cookies_enabled, online_status,
+                connection_type, device_pixel_ratio,
+                local_storage, session_storage,
+                do_not_track,
+                login_id, request_id, session_id, device_id
+            )
+            VALUES(
+                ?, ?, ?,
+                ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?,
+                ?, ?,
+                ?, ?, ?, ?,
+                ?, ?, ?,
+                ?, ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?,
+                ?,
+                ?, ?, ?, ?
+            )
+        """, (
+            user_id, int(success), failure_reason,
+            ip_address, forwarded_for, host, origin, referer,
+            user_agent, accept_language, sec_ch_ua, sec_ch_platform, sec_ch_mobile,
+            method, path,
+            screen_resolution, viewport, timezone, timezone_offset,
+            language, languages, platform,
+            cpu_cores, device_memory, touch_points,
+            int(cookies_enabled) if cookies_enabled is not None else None,
+            int(online_status) if online_status is not None else None,
+            connection_type, device_pixel_ratio,
+            int(local_storage) if local_storage is not None else None,
+            int(session_storage) if session_storage is not None else None,
+            do_not_track,
+            login_id, request_id, session_id, device_id
+        ))
 
         conn.commit()
         return True
 
-    except Exception:
+    except Exception as e:
         conn.rollback()
+        print(f"[LOGIN LOG ERROR] {e}")
         return False
 
     finally:

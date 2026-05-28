@@ -62,20 +62,51 @@ def login():
     if not username or not password:
         return jsonify({"error":"Username and password are required"}),400
 
-    ip_address=data.get("ip_address")
-    user_agent=data.get("user_agent")
+    ip_address = data.get("ip_address")
+    user_agent = data.get("user_agent")
+    fingerprint = data.get("fingerprint", {})
 
-    is_valid=database.login_user(username,password)
-
-    user_id=database.get_user_id(username)
+    is_valid = database.login_user(username, password)
+    user_id = database.get_user_id(username)
 
     if not is_valid[0]:
-
         database.add_login_log(
             user_id=user_id,
+            success=False,
             ip_address=ip_address,
+            forwarded_for=data.get("forwarded_for"),
+            host=data.get("host"),
+            origin=data.get("origin"),
+            referer=data.get("referer"),
             user_agent=user_agent,
-            success=False
+            accept_language=data.get("accept_language"),
+            sec_ch_ua=data.get("sec_ch_ua"),
+            sec_ch_platform=data.get("sec_ch_platform"),
+            sec_ch_mobile=data.get("sec_ch_mobile"),
+            method=data.get("method"),
+            path=data.get("path"),
+            screen_resolution=fingerprint.get("screen_resolution"),
+            viewport=fingerprint.get("viewport"),
+            timezone=fingerprint.get("timezone"),
+            timezone_offset=fingerprint.get("timezone_offset"),
+            language=fingerprint.get("language"),
+            languages=fingerprint.get("languages"),
+            platform=fingerprint.get("platform"),
+            cpu_cores=fingerprint.get("cpu_cores"),
+            device_memory=fingerprint.get("device_memory"),
+            touch_points=fingerprint.get("touch_points"),
+            cookies_enabled=fingerprint.get("cookies_enabled"),
+            online_status=fingerprint.get("online_status"),
+            connection_type=fingerprint.get("connection_type"),
+            device_pixel_ratio=fingerprint.get("device_pixel_ratio"),
+            local_storage=fingerprint.get("local_storage"),
+            session_storage=fingerprint.get("session_storage"),
+            do_not_track=fingerprint.get("do_not_track"),
+            login_id=data.get("login_id"),
+            request_id=data.get("request_id"),
+            session_id=data.get("session_id"),
+            device_id=data.get("device_id"),
+            failure_reason="Invalid username or password"
         )
 
         return jsonify({"error":"Invalid username or password"}),401
