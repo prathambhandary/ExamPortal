@@ -181,7 +181,7 @@ def create_tables():
                 FOREIGN KEY (user_id) REFERENCES login(id) ON DELETE CASCADE,
                 FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
             )''')
-
+ 
     c.execute("""
             CREATE TABLE IF NOT EXISTS login_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
