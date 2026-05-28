@@ -185,68 +185,43 @@ def create_tables():
     c.execute('''
         CREATE TABLE IF NOT EXISTS login_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-
             user_id INTEGER NOT NULL,
-
-            # Login status
             success INTEGER DEFAULT 0,
             failure_reason TEXT,
-
-            # Network info
             ip_address TEXT,
             forwarded_for TEXT,
             host TEXT,
             origin TEXT,
             referer TEXT,
-
-            # Browser / client
             user_agent TEXT,
             accept_language TEXT,
             sec_ch_ua TEXT,
             sec_ch_platform TEXT,
             sec_ch_mobile TEXT,
-
-            # Request metadata
             method TEXT,
             path TEXT,
-
-            # Device fingerprint
             screen_resolution TEXT,
             viewport TEXT,
             timezone TEXT,
             timezone_offset INTEGER,
-
             language TEXT,
             languages TEXT,
-
             platform TEXT,
-
             cpu_cores INTEGER,
             device_memory TEXT,
-
             touch_points INTEGER,
-
             cookies_enabled INTEGER,
             online_status INTEGER,
-
             connection_type TEXT,
-
             device_pixel_ratio REAL,
-
             local_storage INTEGER,
             session_storage INTEGER,
-
             do_not_track TEXT,
-
-            # Security/session
             login_id TEXT,
             request_id TEXT,
             session_id TEXT,
             device_id TEXT,
-
-            # Timing
             login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
             FOREIGN KEY(user_id)
                 REFERENCES login(id)
                 ON DELETE CASCADE
