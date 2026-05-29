@@ -16,9 +16,9 @@ def test_register():
     response = requests.post(
         BASE_URL + "/register",
         json={
-            "username": "admin",
-            "password": "admin",
-            "role": "admin"
+            "username": "maths",
+            "password": "maths",
+            "role": "staff"
         }
     )
 
@@ -127,7 +127,7 @@ def test_profiles():
     print("Response:", response.json())
 if __name__ == "__main__":
     test_home()
-    # test_register()
+    test_register()
     test_login()
     # test_delete_user()
     # test_add_batch()

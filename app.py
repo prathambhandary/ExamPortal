@@ -193,7 +193,7 @@ def login():
 
 @app.route('/register', methods=['POST'])  #security risk
 def register():
-    return {'message': 'closed'}, 200
+    # return {'message': 'closed'}, 200
 
     data = request.json
     username = data.get('username')
