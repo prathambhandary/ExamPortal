@@ -311,12 +311,13 @@ def add_student_endpoint():
 
 @app.route("/clear_table/<table_name>", methods=["GET"]) #security risk
 def clear_table_endpoint(table_name):
-    return {'message': 'closed'}, 200
+    # return {'message': 'closed'}, 200
     allowed_tables = [
         "batches",
         "login",
         "student_profiles",
-        "staff_profiles"
+        "staff_profiles",
+        "login_logs"
     ]
     if table_name not in allowed_tables:
         return jsonify({
