@@ -11,7 +11,6 @@ def test_home():
     print("Status:", response.status_code)
     print("Response:", response.json())
 
-
 def test_register():
     response = requests.post(
         BASE_URL + "/register",
@@ -26,13 +25,12 @@ def test_register():
     print("Status:", response.status_code)  
     print("Response:", response.json())
 
-
 def test_login():
     response = requests.post(
         BASE_URL + "/login",
         json={
-            "username": "rahul",
-            "password": "rahul"
+            "username": "admin",
+            "password": "admin"
         }
     )
 
@@ -125,6 +123,31 @@ def test_profiles():
     print("\nPROFILE TEST")
     print("Status:", response.status_code)
     print("Response:", response.json())
+
+def test_add_staff_profile():
+    access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4MDA0NTIyMywianRpIjoiOWM2MDMwN2ItNjMzNi00YWRiLWFlYmEtY2QxZjA3NTY1MTJkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImFkbWluIiwibmJmIjoxNzgwMDQ1MjIzLCJjc3JmIjoiYjg3ZjI2OWQtYWJkNi00ODc1LThjMmUtZWZhZTRlMDA4OTdhIiwiZXhwIjoxNzgwMDQ4ODIzLCJyb2xlIjoiYWRtaW4ifQ.sQ1Zo7F-8ZJWMt7L9cNdA7HuX1o2pnxIBDeOfLjIS38"
+    response = requests.post(
+        BASE_URL + "/register_staff",
+        json={ 
+            "username": "chem", 
+            "password": "chem", 
+            "first_name": "Dr Manuel", 
+            "last_name": "Rodrigues", 
+            "email": "manuel.rodrigues@nexgen.com", 
+            "phone": "9876543210", 
+            "department": "Chemistry", 
+            "designation": "Head of Department" 
+        },
+        headers={"Authorization": f"Bearer {access_token}"}
+    )
+
+    print("\nADD STAFF TEST")
+    print("Status:", response.status_code)
+    print("Response:", response.json())
+
+
+
+
 if __name__ == "__main__":
     test_home()
     # test_register()
@@ -135,3 +158,4 @@ if __name__ == "__main__":
     # test_register_student()
     # test_all()
     # test_profiles()
+    test_add_staff_profile()

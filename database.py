@@ -559,6 +559,18 @@ def clear_table(table_name):
     finally:
         conn.close()
 
+def clear_table_with_role(table_name, role):
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        c.execute(f"DELETE FROM login WHERE role = ?", (role,))
+        conn.commit()
+        return True, f"login cleared successfully"
+    except Exception as e:
+        return False, str(e)
+    finally:
+        conn.close()
+
 def get_login_table():
     conn = get_connection()
     conn.row_factory = sqlite3.Row
@@ -1044,7 +1056,25 @@ def add_staff(username, password, first_name, last_name, email, phone, departmen
         conn.rollback()
         return False, str(e)
 
+def get_all_staff_profiles():
+    conn = get_connection()
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
 
+    c.execute('''SELECT 
+              login.username,
+              staff_profiles.first_name,
+              staff_profiles.last_name,
+              staff_profiles.email,
+              staff_profiles.phone,
+              staff_profiles.department,
+              staff_profiles.designation,
+              staff_profiles.is_active,
+              staff_profiles.created_at
+            FROM staff_profiles
+            JOIN login ON login.id = staff_profiles.user_id''')
+
+    rows = c.fetchall()
 
 
 if __name__ == "__main__":
