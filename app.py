@@ -185,6 +185,9 @@ def login():
             "batch_name":profile_data.get("batch_name")
         }),200
 
+    # if role=="staff":
+        
+
     return jsonify({
         "message":"Login successful",
         "access_token":token,
@@ -615,6 +618,41 @@ def search_staff():
         "count": len(payload),
         "data": payload
     }), 200
+
+@app.route("/revoke_staff_access", methods=['POST'])
+@jwt_required()
+@admin_required
+def revoke_staff_access():
+    data = request.json
+    username = data.get("username")
+    
+    if not username:
+        return jsonify({'error': 'Username required'}), 400
+    
+    status, message = database.revoke_staff_access(username)
+
+    if status:
+        return jsonify({"message": message}), 200
+    
+    return jsonify({'error': message}), 400
+
+@app.route("/grant_staff_access", methods=['POST'])
+@jwt_required()
+@admin_required
+def grant_staff_access():
+    data = request.json
+    username = data.get("username")
+    
+    if not username:
+        return jsonify({'error': 'Username required'}), 400
+    
+    status, message = database.grant_staff_access(username)
+
+    if status:
+        return jsonify({"message": message}), 200
+    
+    return jsonify({'error': message}), 400
+
 
 
 if __name__ == "__main__":

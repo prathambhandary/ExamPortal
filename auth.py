@@ -13,3 +13,15 @@ def admin_required(fn):
         return fn(*args, **kwargs)
 
     return wrapper
+
+def staff_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        claims = get_jwt()
+
+        if claims.get("role") != "staff":
+            return jsonify({"error": "Unauthorized Access"}), 403
+
+        return fn(*args, **kwargs)
+
+    return wrapper

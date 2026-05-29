@@ -1240,6 +1240,41 @@ def all_staff(
 
     return rows
 
+def revoke_staff_access(username):
+    conn = get_connection()
+    c = conn.cursor()
+
+    c.execute("""
+        UPDATE staff_profiles
+        SET is_active = 0
+        WHERE user_id = (
+            SELECT id
+            FROM login
+            WHERE username = ?
+        )
+    """, (username,))
+
+    conn.commit()
+    conn.close()
+
+def grant_staff_access(username):
+    conn = get_connection()
+    c = conn.cursor()
+
+    c.execute("""
+        UPDATE staff_profiles
+        SET is_active = 1
+        WHERE user_id = (
+            SELECT id
+            FROM login
+            WHERE username = ?
+        )
+    """, (username,))
+
+    conn.commit()
+    conn.close()
+
+
 if __name__ == "__main__":
     create_tables()
     create_indexes()
