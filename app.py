@@ -294,7 +294,7 @@ def add_student_endpoint():
 
 @app.route("/clear_table/<table_name>", methods=["GET"]) #security risk
 def clear_table_endpoint(table_name):
-    # return {'message': 'closed'}, 200
+    return {'message': 'closed'}, 200
     allowed_tables = [
         "batches",
         "login",
@@ -313,6 +313,26 @@ def clear_table_endpoint(table_name):
     return jsonify({
         "error": message
     }), 500
+
+@app.route("/clear_table/<table_name>/<role>", methods=["GET"]) #security risk
+def clear_table_endpoint(table_name, role):
+    # return {'message': 'closed'}, 200
+    allowed_tables = [
+        "login"
+    ]
+    if table_name not in allowed_tables:
+        return jsonify({
+            "error": "Invalid table name"
+        }), 400
+    status, message = database.clear_table_with_role(table_name, role)
+    if status:
+        return jsonify({
+            "message": message
+        }), 200
+    return jsonify({
+        "error": message
+    }), 500
+
 
 @app.route("/get_student_profile", methods=['POST'])
 @jwt_required()
