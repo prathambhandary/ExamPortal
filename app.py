@@ -315,7 +315,7 @@ def clear_table_endpoint(table_name):
     }), 500
 
 @app.route("/clear_table/<table_name>/<role>", methods=["GET"]) #security risk
-def clear_table_endpoint_with_role(table_name, role):
+def clear_table_endpoint_with_role(table_name, role):  
     return {'message': 'closed'}, 200
     allowed_tables = [
         "login"
@@ -541,6 +541,15 @@ def add_staff_endpoint():
     return jsonify({
         "error": message
     }), 400
+
+@app.route("/fetch_staff", methods=['POST'])
+@jwt_required()
+@admin_required
+def fetch_staff():
+    staff_list = database.fetch_staff()
+    return jsonify(staff_list), 200
+
+
 
 
 if __name__ == "__main__":
