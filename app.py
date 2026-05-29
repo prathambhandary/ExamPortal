@@ -12,7 +12,7 @@ from flask_jwt_extended import (
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "super-secret-change-this"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=4)
 jwt = JWTManager(app)
 CORS(app)
 
