@@ -490,22 +490,34 @@ def search_students():
         "data": payload
     }), 200
 
-@app.route("/login_logs",methods=["GET"])
+@app.route("/login_logs", methods=["GET"])
 def login_logs():
-    data=request.get_json(silent=True) or {}
 
-    page=int(data.get("page",1))
-    limit=int(data.get("limit",50))
-    offset=(page-1)*limit
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 50))
 
-    logs=database.get_login_logs(limit,offset)
+    offset = (page - 1) * limit
+
+    logs = database.get_login_logs(limit, offset)
+
+    cleaned_logs = []
+
+    for row in logs:
+
+        cleaned_row = {
+            key: value
+            for key, value in dict(row).items()
+            if value is not None
+        }
+
+        cleaned_logs.append(cleaned_row)
 
     return jsonify({
-        "page":page,
-        "limit":limit,
-        "count":len(logs),
-        "logs":logs
-    }),200
+        "page": page,
+        "limit": limit,
+        "count": len(cleaned_logs),
+        "logs": cleaned_logs
+    }), 200
 
 @app.route("/register_staff", methods=['POST'])
 @jwt_required()
