@@ -1018,6 +1018,35 @@ def ensure_login_logs_columns(conn):
 
     conn.commit()
 
+def add_staff(username, password, first_name, last_name, email, phone, department, designation):
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        password_hash = generate_password_hash(password)
+
+        c.execute('INSERT INTO login (username, password, role) VALUES (?, ?, ?)', (username, password_hash, 'staff'))
+        user_id = c.lastrowid
+        try:
+            c.execute('''INSERT INTO staff_profiles (user_id, first_name, last_name, email, phone, department, designation) VALUES (?, ?, ?, ?, ?, ?, ?)''', (user_id, first_name, last_name, email, phone, department, designation))
+            conn.commit()
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            c.execute('DELETE FROM login WHERE id = ?', (user_id,))
+            conn.commit()
+            return False, f"Email shall be unique: {str(e)}"
+
+        return True, "Staff added successfully"
+    
+    except sqlite3.IntegrityError as e:
+        conn.rollback()
+        return False, f"Username shall be unique: {str(e)}"
+    except Exception as e:
+        conn.rollback()
+        return False, str(e)
+
+
+
+
 if __name__ == "__main__":
     create_tables()
     create_indexes()

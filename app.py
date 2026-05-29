@@ -241,6 +241,7 @@ def get_stream_names():
 
 @app.route("/register_student", methods=['POST'])
 @jwt_required()
+@admin_required
 def add_student_endpoint():
     data = request.json
 
@@ -469,6 +470,57 @@ def login_logs():
         "count":len(logs),
         "logs":logs
     }),200
+
+@app.route("/register_staff", methods=['POST'])
+@jwt_required()
+@admin_required
+def add_staff_endpoint():
+    data = request.json
+
+    if data is None:
+        return jsonify({"error": "Invaild JSON data"}), 400
+    
+    claims = get_jwt()
+    if claims.get("role") != "admin":
+        return jsonify({"error": "Unauthorized Access"}), 403
+
+    required_fields = [
+        "username",
+        "password",
+        "first_name",
+        "email",
+        "phone",
+        "department",
+        "designation"
+    ]
+
+    # CHECK REQUIRED FIELDS
+    for field in required_fields:
+        if field not in data or not data[field]:
+            return jsonify({
+                "error": f"Missing required field: {field}"
+            }), 400
+
+    status, message = database.add_staff(
+        username=data.get("username"),
+        password=data.get("password"),
+        first_name=data.get("first_name"),
+        last_name=data.get("last_name", ""),
+        email=data.get("email"),
+        phone=data.get("phone"),
+        department=data.get("department"),
+        designation=data.get("designation")
+    )
+
+    if status:
+        return jsonify({
+            "message": message
+        }), 201
+
+    return jsonify({
+        "error": message
+    }), 400
+
 
 if __name__ == "__main__":
     app.run(
