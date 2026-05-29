@@ -315,7 +315,7 @@ def clear_table_endpoint(table_name):
     }), 500
 
 @app.route("/clear_table/<table_name>/<role>", methods=["GET"]) #security risk
-def clear_table_endpoint(table_name, role):
+def clear_table_endpoint_with_role(table_name, role):
     # return {'message': 'closed'}, 200
     allowed_tables = [
         "login"
