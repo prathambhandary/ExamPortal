@@ -323,7 +323,7 @@ def clear_table_endpoint_with_role(table_name, role):
     if table_name not in allowed_tables:
         return jsonify({
             "error": "Invalid table name"
-        }), 400
+        }), 400 
     status, message = database.clear_table_with_role(table_name, role)
     if status:
         return jsonify({
