@@ -99,7 +99,7 @@ def test_register_student():
     print("Response:", response.json())
 
 def test_all():
-    access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3OTg5NzAzMywianRpIjoiNGI4N2NhYjItNjdmYi00YWNiLThmMmMtYmU2NWIxODZhMTQ4IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImFkbWluIiwibmJmIjoxNzc5ODk3MDMzLCJjc3JmIjoiMjExOTg0Y2MtZjhlZS00ODlmLWJkNTYtMjc1Mjg0ZTU5MzM1IiwiZXhwIjoxNzc5OTAwNjMzLCJyb2xlIjoiYWRtaW4ifQ.Au7A25jXjPTgIDl0tgtVNmxBTxwGrl9srwHVkat8rxg"
+    access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4MDA0Mzg4NywianRpIjoiOWFlMTJjNjMtOTIyMS00YTZkLTk4MmYtMTdiZDMxNjEwM2JlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJhaHVsIiwibmJmIjoxNzgwMDQzODg3LCJjc3JmIjoiMDQ2MWE0NzktNzQ5NS00MDNhLThmODYtY2VmNzRkM2I3YTI2IiwiZXhwIjoxNzgwMDQ3NDg3LCJyb2xlIjoic3R1ZGVudCJ9.AfmNfXNzJw-ete-oJJbBuAoDhZLj1S1sFbCqKNsQmLU"
     response = requests.post(
         BASE_URL + "/students/search",
         json={
@@ -127,8 +127,8 @@ def test_profiles():
     print("Response:", response.json())
 if __name__ == "__main__":
     test_home()
-    test_register()
-    test_login()
+    # test_register()
+    # test_login()
     # test_delete_user()
     # test_add_batch()
     # test_get_batches()
