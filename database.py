@@ -963,28 +963,30 @@ def get_user_id(username):
 
     return row[0] if row else None
 
-def get_login_logs(limit=100,offset=0):
-    conn=sqlite3.connect(DATABASE)
-    conn.row_factory=sqlite3.Row
-    c=conn.cursor()
+def get_login_logs(limit=50, offset=0):
+
+    conn = get_connection()
+
+    conn.row_factory = sqlite3.Row
+
+    c = conn.cursor()
 
     c.execute("""
-            SELECT
-                login_logs.*,
-                login.username
-            FROM login_logs
-            LEFT JOIN login
-            ON login.id = login_logs.user_id
-            ORDER BY login_logs.id DESC
-            LIMIT ? OFFSET ?
-        """, (limit, offset))
+        SELECT
+            login_logs.*,
+            login.username
+        FROM login_logs
+        LEFT JOIN login
+        ON login.id = login_logs.user_id
+        ORDER BY login_logs.id DESC
+        LIMIT ? OFFSET ?
+    """, (limit, offset))
 
-    rows=[dict(row) for row in c.fetchall()]
+    rows = c.fetchall()
 
     conn.close()
 
     return rows
-
 def ensure_login_logs_columns(conn):
     c = conn.cursor()
 
