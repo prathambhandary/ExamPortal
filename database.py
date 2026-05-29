@@ -325,6 +325,32 @@ def get_student_profile(username):
 
     return data
 
+def get_staff_profile(username):
+    conn = get_connection()
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    c.execute('''SELECT 
+              login.username,
+              staff_profiles.first_name,
+              staff_profiles.last_name,
+              staff_profiles.email,
+              staff_profiles.phone,
+              staff_profiles.department,
+              staff_profiles.designation,
+              staff_profiles.is_active,
+              staff_profiles.created_at
+            FROM staff_profiles
+            JOIN login ON login.id = staff_profiles.user_id
+            WHERE login.username = ?''', (username,))
+
+    rows = c.fetchall()
+    staff_list = [dict(row) for row in rows]
+
+    conn.close()
+
+    return staff_list
+
 def login_user(username, password):
     conn = get_connection()
     c = conn.cursor()
@@ -348,6 +374,9 @@ def login_user(username, password):
 
     if role == "student":
         data = get_student_profile(username)
+
+    if role == "staff":
+        data = get_staff_profile(username)
 
     conn.close()
 
@@ -1255,7 +1284,14 @@ def revoke_staff_access(username):
     """, (username,))
 
     conn.commit()
+
+    if c.rowcount == 0:
+        conn.close()
+        return False, "Staff user not found"
+
     conn.close()
+
+    return True, "Staff access revoked successfully"
 
 def grant_staff_access(username):
     conn = get_connection()
@@ -1272,8 +1308,14 @@ def grant_staff_access(username):
     """, (username,))
 
     conn.commit()
+
+    if c.rowcount == 0:
+        conn.close()
+        return False, "Staff user not found"
+
     conn.close()
 
+    return True, "Staff access granted successfully"
 
 if __name__ == "__main__":
     create_tables()
