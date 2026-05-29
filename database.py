@@ -969,19 +969,15 @@ def get_login_logs(limit=100,offset=0):
     c=conn.cursor()
 
     c.execute("""
-        SELECT
-            login_logs.id,
-            login.username,
-            login_logs.ip_address,
-            login_logs.user_agent,
-            login_logs.login_time,
-            login_logs.success
-        FROM login_logs
-        LEFT JOIN login
-        ON login.id=login_logs.user_id
-        ORDER BY login_logs.id DESC
-        LIMIT ? OFFSET ?
-    """,(limit,offset))
+            SELECT
+                login_logs.*,
+                login.username
+            FROM login_logs
+            LEFT JOIN login
+            ON login.id = login_logs.user_id
+            ORDER BY login_logs.id DESC
+            LIMIT ? OFFSET ?
+        """, (limit, offset))
 
     rows=[dict(row) for row in c.fetchall()]
 

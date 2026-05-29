@@ -29,8 +29,8 @@ def test_login():
     response = requests.post(
         BASE_URL + "/login",
         json={
-            "username": "admin",
-            "password": "admin"
+            "username": "sandeep",
+            "password": "sandeep"
         }
     )
 
