@@ -185,8 +185,22 @@ def login():
             "batch_name":profile_data.get("batch_name")
         }),200
 
-    # if role=="staff":
-        
+    if role=="staff":
+        if profile_data.get("is_active")==0:
+            return jsonify({"error": "Access denied"}), 403
+
+        return jsonify({
+            "message": "Login successful",
+            "access_token": token,
+            "role": role,
+            "username": username,
+            "first_name": profile_data.get("first_name"),
+            "last_name": profile_data.get("last_name"),
+            "email": profile_data.get("email"),
+            "phone": profile_data.get("phone"),
+            "department": profile_data.get("department"),
+            "designation": profile_data.get("designation")
+        }), 200
 
     return jsonify({
         "message":"Login successful",
