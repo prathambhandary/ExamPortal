@@ -345,7 +345,7 @@ def get_staff_profile(username):
             WHERE login.username = ?''', (username,))
 
     rows = c.fetchall()
-    staff_list = [dict(row) for row in rows]
+    staff_list = dict(rows) if rows else None
 
     conn.close()
 
