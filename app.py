@@ -490,9 +490,7 @@ def search_students():
         "data": payload
     }), 200
 
-@app.route("/login_logs",methods=["POST"])
-@jwt_required()
-@admin_required
+@app.route("/login_logs",methods=["GET"])
 def login_logs():
     data=request.get_json(silent=True) or {}
 
