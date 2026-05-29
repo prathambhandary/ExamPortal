@@ -320,7 +320,6 @@ def get_student_profile(username):
     conn.close()
 
     data = dict(row) if row else None
-    print("DEBUG:", data)
     # if data and data['batch_name'] is not None:
         # data['batch_name'] = get_batch_name(data['batch_id'])
 
@@ -1075,7 +1074,171 @@ def get_all_staff_profiles():
             JOIN login ON login.id = staff_profiles.user_id''')
 
     rows = c.fetchall()
+    staff_list = [dict(row) for row in rows]
 
+    conn.close()
+
+    return staff_list
+
+def all_staff(
+    search="",
+    department=None,
+    department_list=None,
+    designation=None,
+    designation_list=None,
+    is_active=None,
+    first_name=None,
+    last_name=None,
+    username=None,
+    email=None,
+    phone=None,
+    sort_by="username",
+    sort_order="asc",
+    limit=10,
+    offset=0
+):
+    conn = get_connection()
+    c = conn.cursor()
+
+    query = """
+        SELECT
+            login.username,
+            staff_profiles.first_name,
+            staff_profiles.last_name,
+            staff_profiles.email,
+            staff_profiles.phone,
+            staff_profiles.department,
+            staff_profiles.designation,
+            staff_profiles.is_active
+        FROM staff_profiles
+        JOIN login ON login.id = staff_profiles.user_id
+        WHERE login.role = 'staff'
+    """
+
+    params = []
+
+    # -----------------------
+    # SEARCH
+    # -----------------------
+    if search:
+        like_search = f"%{search.lower()}%"
+
+        query += """
+            AND (
+                LOWER(login.username) LIKE ?
+                OR LOWER(staff_profiles.first_name) LIKE ?
+                OR LOWER(staff_profiles.last_name) LIKE ?
+                OR LOWER(staff_profiles.email) LIKE ?
+                OR LOWER(staff_profiles.phone) LIKE ?
+                OR LOWER(staff_profiles.department) LIKE ?
+                OR LOWER(staff_profiles.designation) LIKE ?
+            )
+        """
+
+        params.extend([like_search] * 7)
+
+    # -----------------------
+    # LIKE HELPER
+    # -----------------------
+    def like(v):
+        return f"%{v.lower()}%"
+
+    # -----------------------
+    # FILTERS
+    # -----------------------
+    if username:
+        query += " AND LOWER(login.username) LIKE ?"
+        params.append(like(username))
+
+    if first_name:
+        query += " AND LOWER(staff_profiles.first_name) LIKE ?"
+        params.append(like(first_name))
+
+    if last_name:
+        query += " AND LOWER(staff_profiles.last_name) LIKE ?"
+        params.append(like(last_name))
+
+    if email:
+        query += " AND LOWER(staff_profiles.email) LIKE ?"
+        params.append(like(email))
+
+    if phone:
+        query += " AND LOWER(staff_profiles.phone) LIKE ?"
+        params.append(like(phone))
+
+    if department:
+        query += " AND LOWER(staff_profiles.department) LIKE ?"
+        params.append(like(department))
+
+    if designation:
+        query += " AND LOWER(staff_profiles.designation) LIKE ?"
+        params.append(like(designation))
+
+    # -----------------------
+    # LIST FILTERS
+    # -----------------------
+    if department_list:
+        placeholders = ",".join(["?"] * len(department_list))
+
+        query += f"""
+            AND LOWER(staff_profiles.department)
+            IN ({placeholders})
+        """
+
+        params.extend([d.lower() for d in department_list])
+
+    if designation_list:
+        placeholders = ",".join(["?"] * len(designation_list))
+
+        query += f"""
+            AND LOWER(staff_profiles.designation)
+            IN ({placeholders})
+        """
+
+        params.extend([d.lower() for d in designation_list])
+
+    # -----------------------
+    # ACTIVE FILTER
+    # -----------------------
+    if is_active is not None:
+        query += " AND staff_profiles.is_active = ?"
+        params.append(is_active)
+
+    # -----------------------
+    # SAFE SORTING
+    # -----------------------
+    allowed_sort = {
+        "username": "login.username",
+        "first_name": "staff_profiles.first_name",
+        "last_name": "staff_profiles.last_name",
+        "email": "staff_profiles.email",
+        "phone": "staff_profiles.phone",
+        "department": "staff_profiles.department",
+        "designation": "staff_profiles.designation",
+        "is_active": "staff_profiles.is_active"
+    }
+
+    sort_column = allowed_sort.get(sort_by, "login.username")
+    sort_direction = "ASC" if sort_order.lower() == "asc" else "DESC"
+
+    query += f"""
+        ORDER BY {sort_column} {sort_direction},
+        staff_profiles.user_id DESC
+    """
+
+    # -----------------------
+    # PAGINATION
+    # -----------------------
+    query += " LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
+
+    c.execute(query, params)
+
+    rows = c.fetchall()
+
+    conn.close()
+
+    return rows
 
 if __name__ == "__main__":
     create_tables()

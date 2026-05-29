@@ -536,7 +536,7 @@ def add_staff_endpoint():
     if status:
         return jsonify({
             "message": message
-        }), 200
+        }), 201
 
     return jsonify({
         "error": message
@@ -549,7 +549,72 @@ def fetch_staff():
     staff_list = database.fetch_staff()
     return jsonify(staff_list), 200
 
+@app.route("/staff/search", methods=["POST"])
+@jwt_required()
+@admin_required
+def search_staff():
 
+    data = request.get_json(silent=True) or {}
+
+    if data is None:
+        return jsonify({
+            "error": "Invalid JSON data"
+        }), 400
+
+    search = data.get("search", "")
+
+    department = data.get("department")
+    designation = data.get("designation")
+
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
+
+    username = data.get("username")
+
+    email = data.get("email")
+    phone = data.get("phone")
+
+    is_active = data.get("is_active")
+
+    page = int(data.get("page", 1))
+    limit = int(data.get("limit", 10))
+
+    offset = (page - 1) * limit
+
+    rows = database.all_staff(
+        search=search,
+        department=department,
+        designation=designation,
+        first_name=first_name,
+        last_name=last_name,
+        username=username,
+        email=email,
+        phone=phone,
+        is_active=is_active,
+        limit=limit,
+        offset=offset
+    )
+
+    payload = [
+        {
+            "username": r[0],
+            "first_name": r[1],
+            "last_name": r[2],
+            "email": r[3],
+            "phone": r[4],
+            "department": r[5],
+            "designation": r[6],
+            "is_active": r[7]
+        }
+        for r in rows
+    ]
+
+    return jsonify({
+        "page": page,
+        "limit": limit,
+        "count": len(payload),
+        "data": payload
+    }), 200
 
 
 if __name__ == "__main__":

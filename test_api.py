@@ -158,4 +158,4 @@ if __name__ == "__main__":
     # test_register_student()
     # test_all()
     # test_profiles()
-    test_add_staff_profile()
+    # test_add_staff_profile()
